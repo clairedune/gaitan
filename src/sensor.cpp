@@ -27,8 +27,6 @@
 #include <libgaitan/sensor.h>
 
 
-//#define M_PI 3.1415
-
 
 using namespace std;
 namespace gaitan
@@ -73,9 +71,10 @@ Sensor::~Sensor(){
 
 
 int Sensor::readFile(string filename){
-  return this->_data->createFromFile(filename);;
+  return this->_data->createFromFile(filename);
 }
 
+int Sensor::acquire(){}
 
 
 // First column is time

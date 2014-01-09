@@ -14,10 +14,8 @@ using namespace std;
 using namespace gaitan;
 
 int main(int argc, char **argv) {
- 
-
-  //argv[0] est le nom de la programme
-  //argv[1] est le premier argument passé au programme
+  // argv[0] est le nom de la programme
+  // argv[1] est le premier argument passé au programme
   // Get the data file name
   std::string path,encoderFilename("encoder");
   
@@ -30,25 +28,28 @@ int main(int argc, char **argv) {
   }
   
   std::cout << "Nom du chemin vers les données : ";
-  std::cout << path <<std::endl;
+  std::cout << path << std::endl;
   std::cout << "Nom du fichier d'encoder : ";
 
   std::string filename = path+"/"+encoderFilename;
   Encoder *encoder = new Encoder(filename);  
-  cout << "creation " <<endl;
-  // test compute odometry
+
+  //compute odometry
   double L(0.529);
   encoder->odometry(L); 
   encoder->print(5,10);
-  cout << endl<< "----- AVANT FICHIER----"<<endl;
+
+
   string outfile = path+"/odometry.dat"; 
   string outfileLeft = path+"/encoderL.dat"; 
   string outfileRight = path+"/encoderR.dat";
   string outfileSync = path+"/encoderS.dat";  
+
   encoder->writeInFile(outfile,17);
   encoder->writeInFileLeft(outfileLeft);
   encoder->writeInFileRight(outfileRight); 
   encoder->writeInFileSynchro(outfileSync);
+
   //delete encoder;
   return 1;
 }

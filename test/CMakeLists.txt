@@ -5,17 +5,17 @@
 #--------------------------------------------
 
 SET (SOURCE
-main.cpp
-testSensor.cpp
+#main.cpp
+#testSensor.cpp
 testEncoder.cpp
-testPlotEncoder.cpp
-testVisp.cpp
-testVispKinect.cpp
-testGnuplot.cpp
-testSynchroZeroBloc.cpp
+#testPlotEncoder.cpp
+#testVisp.cpp
+#testVispKinect.cpp
+#testGnuplot.cpp
+#testSynchroZeroBloc.cpp
 #testOpenNi.cpp
-testFreenect.cpp
-testGlut.cpp
+#testFreenect.cpp
+#testGlut.cpp
 testKinect.cpp
 )
 

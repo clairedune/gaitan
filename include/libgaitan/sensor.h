@@ -36,11 +36,13 @@ class Sensor
     Sensor(int col, int raw);
     Sensor(string filename); 
     virtual ~Sensor();
+    
     int readFile(string filename);
     int writeInFile(string filename, int precision=15);
     virtual void print(int beg, int end);
     virtual void print();
     void initData();
+    virtual int acquire();
    
     static Table* synchronizeZeroBloc(Sensor* s1, Sensor* s2);
  
