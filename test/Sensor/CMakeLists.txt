@@ -5,10 +5,7 @@
 #--------------------------------------------
 
 SET (SOURCE
-#main.cpp
-#testPlotEncoder.cpp
-#testGnuplot.cpp
-#testGlut.cpp
+testSensor.cpp
 )
 
 # rule for binary build
@@ -26,4 +23,7 @@ FOREACH(source ${SOURCE})
 
 ENDFOREACH(source)
 
-add_subdirectory(Sensor)
+#add_subdirectory(test)
+
+add_subdirectory(Kinect)
+add_subdirectory(Encoder)
