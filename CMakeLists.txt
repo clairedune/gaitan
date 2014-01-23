@@ -62,7 +62,7 @@ if(Boost_FOUND)
 	#include_directories(${Boost_INCLUDE_DIRS})
 	#link_directories(${Boost_LIBRARY_DIRS})
 
-	LIST(APPEND GAITAN_EXTERN_INCLUDE_DIR  ${Boost_INCLUDE_DIR})
+	  LIST(APPEND GAITAN_EXTERN_INCLUDE_DIR  ${Boost_INCLUDE_DIR})
    	LIST(APPEND GAITAN_EXTERN_LINK_DIR ${Boost_LIBRARY_DIRS}) 
    	LIST(APPEND GAITAN_EXTERN_LIBS  ${Boost_LIBRARIES})
 	Message (STATUS ${GAITAN_EXTERN_LIBS})
@@ -91,12 +91,19 @@ endif(VISP_FOUND)
 LIST(APPEND GAITAN_EXTERN_INCLUDE_DIR ~/projects/gnuplot-iostream)
 
 #Ajout de open Ni
-#SET(openni_INCLUDE_DIR ~/projects/openni/Include)
-#LIST(APPEND GAITAN_EXTERN_INCLUDE_DIR ${openni_INCLUDE_DIR})
-#LIST(APPEND openni_LINKS_DIR ${GAITAN_BINARY_DIR}/bin)
-#LIST(APPEND openni_LINKS_DIR ./)
-#LIST(APPEND GAITAN_EXTERN_LINK_DIR ${openni_LINK_DIRS})
-#LIST(APPEND GAITAN_EXTERN_LIBS  OpenNI2)
+SET(openni_INCLUDE_DIR ~/projects/openni/Include)
+LIST(APPEND GAITAN_EXTERN_INCLUDE_DIR ${openni_INCLUDE_DIR})
+
+SET(openni_LINKS_DIR "")
+LIST(APPEND openni_LINKS_DIR ${GAITAN_BINARY_DIR}/bin)
+LIST(APPEND openni_LINKS_DIR ./)
+LIST(APPEND GAITAN_EXTERN_LINK_DIR ${openni_LINKS_DIR})
+
+LIST(APPEND GAITAN_EXTERN_LIBS  OpenNI2)
+
+#Ajout de la lib eigen
+LIST(APPEND GAITAN_EXTERN_INCLUDE_DIR /usr/local/include/eigen3)
+
 #----------------------------------------------------------------------
 # Concatenate intern and third party include dirs
 #----------------------------------------------------------------------

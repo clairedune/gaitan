@@ -6,9 +6,13 @@
 
 SET (SOURCE
 testVispKinect.cpp
-#testOpenNi.cpp
-#testFreenect.cpp
-testKinect.cpp
+testOpenNi.cpp
+testFreenect.cpp
+testKinectDisplay.cpp
+testKinectAcquire.cpp
+testKinectRead.cpp
+testKinectConvertToEigenMatrix.cpp
+testKinectDetectGround.cpp
 )
 
 # rule for binary build

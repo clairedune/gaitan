@@ -9,6 +9,8 @@ SET (SOURCE
 #testPlotEncoder.cpp
 #testGnuplot.cpp
 #testGlut.cpp
+testPlaneFitting.cpp
+testEigen.cpp
 )
 
 # rule for binary build
