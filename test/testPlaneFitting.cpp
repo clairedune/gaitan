@@ -20,6 +20,10 @@
 
 #include <Eigen/Dense>
 
+#include <libgaitan/plane.h>
+
+using namespace gaitan;
+
 /* 
  * pts is a Nx3 matrix each line is the coord of a 3D point (x,y,z)
  * ax+by+cz+d=0
@@ -104,9 +108,19 @@ int main() {
     std::cout << "The least-squares solution is:\n";
     std::cout << param.transpose() << std::endl;
     
+
+    Eigen::MatrixXf ptsIn(pts), ptsOut(3,1);
+    double confidence(0.01);
+    Plane plane;
+    plane.findParameters(ptsIn, ptsOut, confidence);
+    plane.print(); 
+    std::cout << "The least-squares solution is:\n";
+    std::cout << plane.getParameters().transpose() << std::endl;
+    
+  
     //on prend la distance avec le premier point
-    Eigen::VectorXf dist = absDistanceVect(pts,paramReal);
-    std::cout << "distance : "<<dist.block(0,0,10,1) << std::endl; 
+  //  Eigen::VectorXf dist = absDistanceVect(pts,paramReal);
+  //  std::cout << "distance : "<<dist.block(0,0,10,1) << std::endl; 
     
     return 1;      
 }

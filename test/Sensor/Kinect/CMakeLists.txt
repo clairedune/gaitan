@@ -5,14 +5,18 @@
 #--------------------------------------------
 
 SET (SOURCE
-testVispKinect.cpp
-testOpenNi.cpp
-testFreenect.cpp
-testKinectDisplay.cpp
-testKinectAcquire.cpp
-testKinectRead.cpp
-testKinectConvertToEigenMatrix.cpp
+#testVispKinect.cpp
+#testOpenNi.cpp
+#testFreenect.cpp
+#testKinectDisplay.cpp
+#testKinectAcquire.cpp
+#testKinectRead.cpp
+#testKinectConvertToEigenMatrix.cpp
 testKinectDetectGround.cpp
+testKinectConvert.cpp
+testKinectDisplayPCL.cpp
+testPCLViewer.cpp
+testPCLViewerPlaneAndCloud.cpp
 )
 
 # rule for binary build

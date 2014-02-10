@@ -5,8 +5,11 @@
 #--------------------------------------------
 
 SET (SOURCE
-testPlane.cpp
-testShape.cpp
+#testPlane.cpp
+testPlaneOrientation.cpp
+#testShape.cpp
+#testPCLPlaneFitting.cpp
+testPCLSegment.cpp
 )
 
 # rule for binary build

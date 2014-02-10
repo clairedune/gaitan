@@ -24,6 +24,9 @@
 #include <visp/vpImage.h>
 #include <visp/vpRGBa.h>
 
+#include <pcl/common/common_headers.h>
+
+
 namespace gaitan
 {
 class Conversion
@@ -44,6 +47,11 @@ class Conversion
                        double &fy,
                        double &cx,
                        double &cy);
+                       
+   
+   static int convert(const Eigen::MatrixXf & matrix, pcl::PointCloud<pcl::PointXYZRGB>::Ptr & cloud, const int & r, const int & g, const int & b);
+   static int convert(const Eigen::MatrixXf & matrix, pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud);
+                    
 };
 }
 #endif // Conversion_H

@@ -20,6 +20,7 @@
 #define TABLE_H
 #include <string>
 
+#include <Eigen/Dense>
 using namespace std;
 
 namespace gaitan
@@ -30,6 +31,8 @@ class Table
     double** _data; // data file  
     int _nbRow;    // data number
     int _nbCol;    // data type  
+    
+   // Eigen::MatrixXf _data;
     
   public:	
     Table();

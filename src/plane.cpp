@@ -3,13 +3,16 @@
 #include<Eigen/Dense>
 #include<iostream>
 
+#include <pcl/common/common_headers.h>
+
+
 using namespace Eigen;
 
 namespace gaitan
 {
      Plane::Plane(){
 		  this->parameters.resize(4);
-		  this->parameters(3) =-1; //set d to -1 by default
+		  this->parameters(3) =-1; //set d to 1 by default
 		 }
 		 
      Plane::Plane(const double& a, const double& b, const double& c, const double&d){
@@ -75,7 +78,7 @@ namespace gaitan
   
      float Plane::computeError(const double &X, const double &Y, const double & Z){
 		//defaut distance
-   		float error =this->parameters(0)*X+this->parameters(1)*Y+this->parameters(2)*Z+this->parameters(3) ;
+   		float error = (this->parameters(0)*X+this->parameters(1)*Y+this->parameters(2)*Z+this->parameters(3)) ;
    		return error;
  	   }
   
@@ -121,13 +124,14 @@ namespace gaitan
    
 int Plane::inlierSelection(Eigen::MatrixXf & ptsIn, 
                      Eigen::MatrixXf & ptsOut, 
-                     const double & distThreshold){
+                     double & distThreshold){
    
     // store the current data in a temp matrix
     Eigen::MatrixXf pts(ptsIn);
         
     // compute the distance from data to plane
-    Eigen :: VectorXf dist = this->computeDistance(pts);    
+    //Eigen :: VectorXf dist = this->computeDistance(pts); 
+    Eigen :: VectorXf dist = this->computeError(pts);    
         
     // count the number of point in the plane and out of the b
     int nbIn(0), 
@@ -138,7 +142,7 @@ int Plane::inlierSelection(Eigen::MatrixXf & ptsIn,
       // if the distance btw the 
       // plane and the point is lower than
       // a spectific threhold
-      if (dist(i) < distThreshold)  
+      if (fabs(dist(i)) < distThreshold)  
         nbIn++;
       else 
         nbOut++;
@@ -151,7 +155,7 @@ int Plane::inlierSelection(Eigen::MatrixXf & ptsIn,
     // select the point in and out
     int indexIn(0), indexOut(0);
     for(int i=0; i<dist.rows(); i++){
-      if(dist(i) < distThreshold){
+      if(fabs(dist(i))< distThreshold){
           ptsIn(indexIn,0) = pts(i,0);
           ptsIn(indexIn,1) = pts(i,1);
           ptsIn(indexIn,2) = pts(i,2); 
@@ -171,14 +175,11 @@ int Plane::inlierSelection(Eigen::MatrixXf & ptsIn,
  * 
  */   
 int Plane::findParameters(Eigen::MatrixXf & ptsIn, 
-                             Eigen::MatrixXf & ptsOut, 
-                             const double & distThreshold){
+                          Eigen::MatrixXf & ptsOut, 
+                          double & distThreshold){
    
-    // store the current data in a temp matrix
-    Eigen::MatrixXf pts(ptsIn);
-    
     // refine the plane parameters
-    this->findParameters(pts); 
+    this->findParameters(ptsIn); 
     
     // count the number of point  the plane and out of the b
     int nbInPrec(ptsIn.rows());
@@ -186,15 +187,112 @@ int Plane::findParameters(Eigen::MatrixXf & ptsIn,
     // select the inliers
     this->inlierSelection(ptsIn, ptsOut, distThreshold);
     
-    std::cout << "ptsin " << ptsIn.rows() << std::endl;
-    std::cout << "ptsout " << ptsOut.rows() << std::endl;
-
     // test if the inlier set has evoluated
-    if (ptsIn.rows()==nbInPrec){
-      return 1; 
+    if (ptsIn.rows()>=nbInPrec){
+      distThreshold /= 2;
+      if  (distThreshold < 0.02) return 1; 
+      this->findParameters(ptsIn, ptsOut, distThreshold);
     }
-    else{
+    else{ 
       this->findParameters(ptsIn, ptsOut, distThreshold);
     }
   }
+  
+/*!
+ * 
+ * This function finds parameters using pcl algoritm
+ *  
+ */  
+  
+int Plane::findParameters(const pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud, double & distanceThreshold)
+{
+      // create model coefficient
+      pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+      pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+      // Create the segmentation object
+      pcl::SACSegmentation<pcl::PointXYZ> seg;
+      // Optional
+      seg.setOptimizeCoefficients (true);
+      // Mandatory
+      seg.setModelType (pcl::SACMODEL_PLANE);
+      seg.setMethodType (pcl::SAC_RANSAC);
+      seg.setDistanceThreshold (distanceThreshold);
+
+      seg.setInputCloud (cloud->makeShared ());
+      seg.segment (*inliers, *coefficients);
+      
+      std::cerr << "Model coefficients: " << coefficients->values[0] << " " 
+                                      << coefficients->values[1] << " "
+                                      << coefficients->values[2] << " " 
+                                      << coefficients->values[3] << std::endl;  
+                                      
+                                      
+       this->parameters(0) = -coefficients->values[0]/coefficients->values[3];
+       this->parameters(1) = -coefficients->values[1]/coefficients->values[3];
+       this->parameters(2) = -coefficients->values[2]/coefficients->values[3];
+       this->parameters(3) = -coefficients->values[3]/coefficients->values[3];  
+       return 1;                                
+                                      
+}  
+  
+  
+void Plane::createPointCloud( Eigen::MatrixXf & pts)
+{
+      double a(this->parameters(0));
+      double b(this->parameters(1));
+      double c(this->parameters(2));
+      double d(this->parameters(3));
+      int width(100), height(100), sampleStep(0.1), index(0);
+      pts.resize(width*height,3);
+      for (int i=0; i<width;i++){
+        for (int j=0; j<height;j++){
+          pts(index,0) = (i-width/2)*sampleStep ;
+          pts(index,1) = (i-height/2)*sampleStep ;
+          pts(index,2) = -(a*pts(index,0)+b*pts(index,1)+d)/c;
+          index++;
+      }  
+    }
+}  
+  
+  
+Eigen::Matrix3f Plane::computeOrientation(){
+
+  Eigen::Matrix3f R =Eigen::MatrixXf::Identity(3,3);
+  Eigen::Vector3f e3(this->parameters.block(0,0,3,1));
+  e3.normalize();
+  //std::cout << e3 << std::endl;
+
+  
+  Eigen::Vector3f e2;
+  e2 << 0,1,0; 
+  //std::cout << e2 << std::endl;
+  Eigen::Vector3f e1 (e2.cross(e3)); 
+  //std::cout << e1 << std::endl;
+  //std:: cout << "norm e1 : " << e1.norm() << std::endl;   
+  
+  
+  R.col(0) = e1;
+  R.col(1) = e2;
+  R.col(2) = e3;
+ // std::cout << R << std::endl;
+   
+  return R;
+}  
+
+void Plane::changeFrame(const Eigen::Matrix4f & cMo)
+{
+  // Save current plane parameters
+  float  Ao = this->parameters(0), 
+         Bo = this->parameters(1), 
+         Co = this->parameters(2), 
+         Do = this->parameters(3);
+         
+  this->parameters(0) = cMo(0,0)*Ao + cMo(0,1)*Bo + cMo(0,2)*Co;
+  this->parameters(1) = cMo(1,0)*Ao + cMo(1,1)*Bo + cMo(1,2)*Co;
+  this->parameters(2) = cMo(2,0)*Ao + cMo(2,1)*Bo + cMo(2,2)*Co;
+  this->parameters(3) = Do - (cMo(0,3)*this->parameters(0) + 
+                              cMo(1,3)*this->parameters(1) + 
+                              cMo(2,3)*this->parameters(2));
+}
+  
 }

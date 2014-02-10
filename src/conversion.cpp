@@ -3,6 +3,9 @@
 #include <visp/vpConfig.h>
 
 
+
+#include <pcl/common/common_headers.h>
+
 namespace gaitan
 {    
 
@@ -70,7 +73,7 @@ int Conversion::convert(const Eigen::MatrixXf & depthMat,
         for (int j=0 ; j<depthMat.cols();j++)
         {
           if (fabs(depthMat(i,j) + 1.f) > std::numeric_limits<float>::epsilon()){
-            point3D(index,2) = depthMat(i,j)/1000; //to convert into meters 
+            point3D(index,2) = depthMat(i,j);///1000; //to convert into meters 
             point3D(index,0) = (i-cx)*point3D(index,2)/fx; 
             point3D(index,1) = (j-cy)*point3D(index,2)/fy;
             index++;
@@ -100,13 +103,46 @@ int Conversion::convert(const Eigen::MatrixXf & point3D,
       
       for (int index=0; index<point3D.rows();index++)
         {
-          float val = point3D(index,2)*1000;
+          float val = point3D(index,2);//*1000;
+          //if(val>0){
           int   i   = round(fx*point3D(index,0)/point3D(index,2)+cx);
           int   j   = round(fy*point3D(index,1)/point3D(index,2)+cy);
           depthMat(i,j)=val;
+          //}
           index++;
         }
         return 1;
 }  
+
+
+
+int Conversion::convert(const Eigen::MatrixXf & matrix, 
+                        pcl::PointCloud<pcl::PointXYZRGB>::Ptr & cloud, 
+                        const int & r, const int & g, const int & b)
+{
+ for (int i=0; i<matrix.rows();i++){
+            pcl::PointXYZRGB basic_point;
+            basic_point.x = matrix(i,0);
+            basic_point.y = matrix(i,1);
+            basic_point.z = matrix(i,2);
+            basic_point.r = r;
+            basic_point.g = g;
+            basic_point.b = b;
+            cloud->push_back(basic_point);
+      }
+      return 1;
+}
+
+int Conversion::convert(const Eigen::MatrixXf & matrix, pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud){
+ for (int i=0; i<matrix.rows();i++){
+            pcl::PointXYZ basic_point;
+            basic_point.x = matrix(i,0);
+            basic_point.y = matrix(i,1);
+            basic_point.z = matrix(i,2);
+            cloud->push_back(basic_point);
+      }
+ return 1;
+}
+
 
 }//end namespace   

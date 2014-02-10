@@ -87,6 +87,15 @@ if(VISP_FOUND)
 endif(VISP_FOUND)
 
 
+find_package(PCL 1.2 REQUIRED)
+LIST(APPEND GAITAN_EXTERN_INCLUDE_DIR ${PCL_INCLUDE_DIRS})
+LIST(APPEND GAITAN_EXTERN_LINK_DIR ${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+MESSAGE(STATUS "library de la pcl ${PCL_LIBRARY_DIRS}")
+#add_executable (cloud_viewer cloud_viewer.cpp)
+#target_link_libraries (cloud_viewer ${PCL_LIBRARIES})
+LIST(APPEND GAITAN_EXTERN_LIBS ${PCL_LIBRARIES})
+
 #Inclusion de gnupot pour C++
 LIST(APPEND GAITAN_EXTERN_INCLUDE_DIR ~/projects/gnuplot-iostream)
 
@@ -108,19 +117,19 @@ LIST(APPEND GAITAN_EXTERN_INCLUDE_DIR /usr/local/include/eigen3)
 # Concatenate intern and third party include dirs
 #----------------------------------------------------------------------
 INCLUDE_DIRECTORIES(${GAITAN_INTERN_INCLUDE_DIR} ${GAITAN_EXTERN_INCLUDE_DIR})
-MESSAGE (STATUS "Include ${GAITAN_EXTERN_INCLUDE_DIR}")
+#MESSAGE (STATUS "Include ${GAITAN_EXTERN_INCLUDE_DIR}")
 
 #----------------------------------------------------------------------
 # Add library path
 #----------------------------------------------------------------------
 LINK_DIRECTORIES(${GAITAN_INTERN_LINK_DIR} ${GAITAN_EXTERN_LINK_DIR})
-MESSAGE(STATUS " Link Libs ${GAITAN_EXTERN_LINK_DIR}")
+#MESSAGE(STATUS " Link Libs ${GAITAN_EXTERN_LINK_DIR}")
 
 #----------------------------------------------------------------------
 # Link Libraries
 # ----------------------------------------------------------------------
 LINK_LIBRARIES(${GAITAN_EXTERN_LIBS} ${GAITAN_INTERN_LIBS})
-Message(STATUS "Libs ${GAITAN_EXTERN_LIBS}")
+#Message(STATUS "Libs ${GAITAN_EXTERN_LIBS}")
 #----------------------------------------------------------------------
 # CREATE INTERN LIBRARY
 # ----------------------------------------------------------------------

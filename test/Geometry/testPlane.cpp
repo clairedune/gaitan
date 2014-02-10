@@ -42,9 +42,9 @@ int main() {
     
     // recursive plane fitting and outliers selection
     Eigen::MatrixXf ptsIn(pts), ptsOut(3,0);
-    double confidence(0.01);
-    estPlane.findParameters(ptsIn, ptsOut, confidence);
-    estPlane.print(); 
+    double confidence(0.03);
+  // estPlane.findParameters(ptsIn, ptsOut, confidence);
+    //estPlane.print(); 
     
      
     return 1;      

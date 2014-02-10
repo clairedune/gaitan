@@ -9,8 +9,8 @@ SET (SOURCE
 #testPlotEncoder.cpp
 #testGnuplot.cpp
 #testGlut.cpp
-testPlaneFitting.cpp
-testEigen.cpp
+#testPlaneFitting.cpp
+#testEigen.cpp
 )
 
 # rule for binary build
@@ -28,5 +28,5 @@ FOREACH(source ${SOURCE})
 
 ENDFOREACH(source)
 
-add_subdirectory(Sensor) 
+#add_subdirectory(Sensor) 
 add_subdirectory(Geometry)
