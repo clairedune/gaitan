@@ -5,8 +5,14 @@
 #--------------------------------------------
 
 SET (SOURCE
-#testPlane.cpp
-#testShape.cpp
+#testKinectDisplayPCL.cpp
+#testPCLViewer.cpp
+#testPCLViewerPlaneAndCloud.cpp
+#testPlaneOrientation.cpp
+testPCLPlaneFitting.cpp
+#testPCLSegment.cpp
+testPCLSegment-v2.cpp
+#testPCLSegmentMultiImages.cpp
 )
 
 # rule for binary build
@@ -24,5 +30,4 @@ FOREACH(source ${SOURCE})
 
 ENDFOREACH(source)
 
-
-add_subdirectory(PCL)
+#add_subdirectory(test)

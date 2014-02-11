@@ -32,4 +32,20 @@ namespace gaitan
   {
   
   }
+  
+  int  Kinect::readFile(string filename){
+    std::cerr << "TODO: The file should contain the heel, toes and tibia XYZ" << std::endl;
+    std::cerr << "This is not build yet ... " << std::endl; 
+    }
+  int  Kinect::writeInFile(string filename, int precision=15){
+    std::cerr << "TODO: The file should contain the heel, toes and tibia XYZ" << std::endl;
+    std::cerr << "This is not build yet ... " << std::endl; 
+    }
+  int  Kinect::acquire(){
+    
+    
+    }
+  
+  
+  
 }

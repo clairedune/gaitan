@@ -8,15 +8,13 @@ SET (SOURCE
 #testVispKinect.cpp
 #testOpenNi.cpp
 #testFreenect.cpp
-#testKinectDisplay.cpp
-#testKinectAcquire.cpp
-#testKinectRead.cpp
+testKinectDisplay.cpp
+testKinect.cpp
+testKinectAcquire.cpp
+testKinectRead.cpp
 #testKinectConvertToEigenMatrix.cpp
-testKinectDetectGround.cpp
-testKinectConvert.cpp
-testKinectDisplayPCL.cpp
-testPCLViewer.cpp
-testPCLViewerPlaneAndCloud.cpp
+#testKinectDetectGround.cpp
+#testKinectConvert.cpp
 )
 
 # rule for binary build

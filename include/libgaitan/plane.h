@@ -26,10 +26,17 @@ namespace gaitan
      Plane();
      Plane(const double& a, const double& b, const double& c, const double&d);
      Plane(const Vector4f& param);
+     Plane(Plane & plane);
      ~Plane();
           
+    Plane & operator = (Plane &);      
+          
+     double  getA();
+     double  getB();
+     double  getC();
+     double  getD();
+          
      virtual int findParameters(const MatrixXf& pts );
-     
      virtual VectorXf computeDistance(const MatrixXf& pts);
      virtual VectorXf computeError(const MatrixXf& pts);
      
@@ -50,7 +57,10 @@ namespace gaitan
      // fixme : can t see the points created using pcl. May be to small part of space ?
      void createPointCloud( Eigen::MatrixXf & pts);
      
+     // compute the transformation between the plane and the camera
      Eigen::Matrix3f computeOrientation();
+     Eigen::Matrix4f computeTransformation();
+
       
      void changeFrame(const Eigen::Matrix4f & cMo) ;
      

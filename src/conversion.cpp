@@ -73,7 +73,7 @@ int Conversion::convert(const Eigen::MatrixXf & depthMat,
         for (int j=0 ; j<depthMat.cols();j++)
         {
           if (fabs(depthMat(i,j) + 1.f) > std::numeric_limits<float>::epsilon()){
-            point3D(index,2) = depthMat(i,j);///1000; //to convert into meters 
+            point3D(index,2) = depthMat(i,j);
             point3D(index,0) = (i-cx)*point3D(index,2)/fx; 
             point3D(index,1) = (j-cy)*point3D(index,2)/fy;
             index++;
@@ -83,8 +83,33 @@ int Conversion::convert(const Eigen::MatrixXf & depthMat,
         return 1;
 }     
 
+int Conversion::convert(const Eigen::MatrixXf & depthMat,
+                              pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud,
+                              double &fx,
+                              double &fy,
+                              double &cx,
+                              double &cy)
+{
+      int index(0);
+      for (int i=0; i<depthMat.rows();i++)
+        for (int j=0 ; j<depthMat.cols();j++)
+        {
+          if (fabs(depthMat(i,j) + 1.f) > std::numeric_limits<float>::epsilon()){
+            pcl::PointXYZ basic_point;
+            basic_point.x = depthMat(i,j);
+            basic_point.y = (i-cx)*depthMat(i,j)/fx;
+            basic_point.z = (j-cy)*depthMat(i,j)/fy;
+            cloud->push_back(basic_point);
+            index++;
+          }
+        }
+        return 1;
+}     
+
+
+
 int Conversion::convert(const Eigen::MatrixXf & point3D,
-                                 Eigen::MatrixXf & depthMat,
+                        Eigen::MatrixXf & depthMat,
                                  const int &height,
                                  const int &width,
                                  double &fx,
@@ -143,6 +168,36 @@ int Conversion::convert(const Eigen::MatrixXf & matrix, pcl::PointCloud<pcl::Poi
       }
  return 1;
 }
+
+int Conversion::convert(const pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud, Eigen::MatrixXf & matrix){
+  
+ matrix.resize(cloud->points.size(), 3); 
+ for (int i=0; i<cloud->points.size();i++){
+            pcl::PointXYZ basic_point(cloud->points[i]);
+            matrix(i,0)=basic_point.x ;
+            matrix(i,1)=basic_point.y ;
+            matrix(i,2)=basic_point.z ;
+      }
+ return 1;
+}
+
+
+int Conversion::convert(const pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr & colorCloud, 
+                       const int & r, const int & g, const int & b){
+       for (int i=0; i<cloud->points.size ();i++){
+            pcl::PointXYZRGB point;
+            point.x = cloud->points[i].x;
+            point.y = cloud->points[i].y;
+            point.z = cloud->points[i].z;
+            point.r = r;
+            point.g = g;
+            point.b = b;
+            colorCloud->push_back(point);
+      }
+      return 1;
+  
+  }
+
 
 
 }//end namespace   

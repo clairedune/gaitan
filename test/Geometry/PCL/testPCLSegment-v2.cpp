@@ -8,7 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <iomanip>
+#include <iomanip>   
 #include <math.h>
 
 #include <Eigen/Dense>
@@ -77,7 +77,7 @@ Eigen::MatrixXf changeFrame(const Eigen::MatrixXf & oP,const Eigen::Matrix4f & w
 
 
 boost::shared_ptr<pcl::visualization::PCLVisualizer> shapesVis (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud,
-float & a, float & b, float & c, float & d)
+float a, float b, float c, float d)
 {
   // --------------------------------------------
   // -----Open 3D viewer and add point cloud-----
@@ -122,17 +122,28 @@ int
 main (int argc, char** argv)
 {
 
-std::string filename;
 
+  // ------------- 1 -------------
+  // Construct the image filename
+  // -----------------------------
+  std::string filename;
 	if (argc>1){
 		filename = argv[1];
 	}
 	else {
 		filename="/home/dune/Documents/data/kinect/essai1/depth_0000000.pfm";
   }
-	
+  std::cout << "filename : "<< filename << std::endl;   
+  
+  
 	try {
-    
+  
+  
+  
+      
+  // ------------- 2 -------------
+  // Read the image on disk
+  // -----------------------------  
       int width(640), height(480);
       vpImage<float> dmap(height,width);//for medium resolution
 
@@ -144,53 +155,52 @@ std::string filename;
               std::cout << "Catch an exception when reading image " << filename << std::endl;
       }
         
+  
+  // ------------- 3 -------------
+  // Convert the image to 3D points
+  // -----------------------------      
       // copy the matrix in an eigen mat
       Eigen::MatrixXf depthMap, pointCloud;
       Conversion::convert(dmap, depthMap);
       double fx(525.0), fy(525.0), cx(319.05), cy(239.5);
-      
       Conversion::convert(depthMap,pointCloud,fx,fy,cx,cy);
-      
-      Plane plane;//(0.663255,-0.0812923,1.32137,-1);
 
-      // recursive plane fitting and outliers selection
+      // find the coeff of the main plane
       Eigen::MatrixXf ptsIn(pointCloud), ptsOut(3,1) ;
-      double confidence(0.15);
-      //plane.findParameters(ptsIn, ptsOut, confidence);
+      double confidence(0.02);
       pcl::PointCloud<pcl::PointXYZ>::Ptr simpleCloud(new pcl::PointCloud<pcl::PointXYZ>);
       Conversion::convert(pointCloud,simpleCloud);
-      //find parameters using pcl algo
-      confidence = 0.01;
+      
+ 
+  // ------------- 4 -------------
+  // Estimate the parameters of the ground plane
+  // -----------------------------     
+      
+      Plane plane;
       plane.findParameters(simpleCloud,confidence);
       
-//      confidence = 0.1;
+  // ------------- 5 -------------
+  // Split the point cloud into two parts : plane and not plane
+  // ----------------------------- 
+      // divide the point cloud into two clouds.
       plane.inlierSelection(ptsIn, ptsOut, confidence);
-      Eigen::Matrix3f kRg = plane.computeOrientation();
-      plane.print();
-      Eigen::Matrix4f gMk;
-      gMk.topLeftCorner(3,3) = kRg.inverse() ;
-      gMk.topRightCorner(3,1) << 0,0,0 ;
-      gMk.bottomLeftCorner(1,3) << 0,0,0;
-      gMk.bottomRightCorner(1,1) << 1;
-      
-      
+    
+  
+  // ------------- 6 -------------
+  // Change the frame coordinate to be aligned with the ground
+  // -----------------------------  
       //change point frame
-      plane.changeFrame(gMk);
-      Eigen::MatrixXf gPtsIn = changeFrame(ptsIn,gMk);
+      Eigen::Matrix4f gMk = plane.computeTransformation();
+      Eigen::MatrixXf gPtsIn  = changeFrame(ptsIn,gMk);
       Eigen::MatrixXf gPtsOut = changeFrame(ptsOut,gMk);
       
+  // ------------- 7 -------------
+  // Segment the not plane subspace into the two limb set of points
+  // -----------------------------
       
-      //populate cloud     
-      pcl::PointCloud<pcl::PointXYZRGB>::Ptr colorCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-      Conversion::convert(ptsIn,colorCloud, 255, 0, 0);
-      Conversion::convert(ptsOut,colorCloud, 0, 255,0);
-      Conversion::convert(gPtsIn,colorCloud, 255, 0, 255);
-      Conversion::convert(gPtsOut,colorCloud, 0, 255,255);
-      cloud->width = (int) colorCloud->points.size();
-      cloud->height = 1;
-      
+      // build a pcl point cloud
       pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-      Conversion::convert(pointCloud,cloud);
+      Conversion::convert(gPtsOut,cloud);
       std::cout << "PointCloud before filtering has: " << cloud->points.size ()  << " data points." << std::endl; //*
       
       // Create the filtering object: downsample the dataset using a leaf size of 1cm
@@ -202,10 +212,58 @@ std::string filename;
       std::cout << "PointCloud after filtering has: " << cloudFiltered->points.size ()  << " data points." << std::endl; //*
 
       
+      // Creating the KdTree object for the search method of the extraction
+      pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
+      tree->setInputCloud (cloudFiltered);     
+      std::vector<pcl::PointIndices> clusterIndices;
+      pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
+      ec.setClusterTolerance (0.05); // 5cm
+      ec.setMinClusterSize (100);
+      ec.setMaxClusterSize (50000);
+      ec.setSearchMethod (tree);
+      ec.setInputCloud (cloudFiltered);
+      ec.extract (clusterIndices);
+
       // viewer
+      
+            //populate cloud     
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr colorCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+     // Conversion::convert(ptsIn,colorCloud, 255, 0, 0);
+      //Conversion::convert(ptsOut,colorCloud, 0, 255,0);
+      //Conversion::convert(gPtsIn,colorCloud, 255, 0, 255);
+      //Conversion::convert(gPtsOut,colorCloud, 0, 255,255);
+      //colorCloud->width = (int) colorCloud->points.size();
+      //colorCloud->height = 1;
+      // Creating the Clusters
+      int j(0);
+      for (std::vector<pcl::PointIndices>::const_iterator it = clusterIndices.begin (); it != clusterIndices.end (); ++it)
+      //for (int i=0; i<3; i++)
+      {
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloudCluster (new pcl::PointCloud<pcl::PointXYZ>);
+        for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); pit++)
+         cloudCluster->points.push_back (cloudFiltered->points[*pit]); 
+         cloudCluster->width = cloudCluster->points.size ();
+         cloudCluster->height = 1;
+         cloudCluster->is_dense = true;
+       
+         if(j<2) // store the cluster
+              Conversion::convert(cloudCluster,colorCloud, j*100, j*100,255);
+       
+         std::cout << "PointCloud representing the Cluster: " << cloudCluster->points.size () << " data points." << std::endl;
+         j++;
+      }
+       std::cout << "There are " << j << " clusters " << endl;
+      
+      
+      
+      
+      
+      
+
+      
+      
       boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
-      Eigen::VectorXf param = plane.getParameters(); 
-      viewer = shapesVis(colorCloud, param(0), param(1), param(2), param(3));
+      viewer = shapesVis(colorCloud, 0, 0, 1, 0);
  
       while (!viewer->wasStopped ())
       {
@@ -228,3 +286,4 @@ main(){
 	std::cout << "You should install a video device (X11, GTK, OpenCV, GDI) to run this example" << std::endl;
 }
 #endif
+

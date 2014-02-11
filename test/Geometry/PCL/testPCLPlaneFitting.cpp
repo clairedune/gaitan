@@ -43,11 +43,11 @@ using namespace gaitan;
 #include <pcl/sample_consensus/method_types.h>
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
-
+#include <time.h>
 
 
 boost::shared_ptr<pcl::visualization::PCLVisualizer> shapesVis (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud,
-float & a, float & b, float & c, float & d)
+double a, double b, double c, double  d)
 {
   // --------------------------------------------
   // -----Open 3D viewer and add point cloud-----
@@ -153,25 +153,42 @@ std::string filename;
       
       
       
-      double distanceThreshold(0.01);
+
       Plane plane;
       
+      time_t start,end;
+      double dif;
+   
+   
+      double distanceThreshold(0.001);      
+      //evaluate time
+      time (&start);
+      plane.findParameters(cloud, distanceThreshold);
+      //evaluate time
+      time (&end);
+      dif = difftime (end,start);
+      std::cout <<  "  La methode ransac de la pcl  " << std::endl;
+      printf ("Elasped time is %.2lf seconds.", dif );
+      plane.print();
       
+   
       double confidence(0.15);
       Eigen::MatrixXf ptsIn(pointCloud), ptsOut(3,1) ;
+      //evaluate time
+      time (&start);
+      // launch method
       plane.findParameters(ptsIn, ptsOut, confidence);
+      // evaluate time
+      time (&end);
+      dif = difftime (end,start);
+      printf ("Elasped time is %.2lf seconds.", dif );
       std::cout <<  "  La methode de la classe plane  " << std::endl; 
       plane.print(); 
-            
-      plane.findParameters(cloud, distanceThreshold);
-      std::cout <<  "  La methode ransac de la pcl  " << std::endl;
-      plane.print(); 
+
        
-      Vector4f param= plane.getParameters();
-      float a = param[0]  ;
-      float b = param[1] ;
-      float c = param[2] ;
-      float d = param[3] ;
+       
+      
+       
       
       distanceThreshold=0.02;
       plane.inlierSelection(ptsIn, ptsOut, distanceThreshold);
@@ -181,7 +198,7 @@ std::string filename;
       Conversion::convert(ptsOut, colorCloud, 0,255,0);
    
       boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
-      viewer = shapesVis (colorCloud,a,b,c,d);
+      viewer = shapesVis (colorCloud,plane.getA(),plane.getB(),plane.getC(),plane.getD());
        
       while (!viewer->wasStopped ())
       {

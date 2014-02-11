@@ -27,7 +27,36 @@ namespace gaitan
       this->parameters = param;
      }
      
+     Plane::Plane(Plane & plane){
+       Vector4f param = plane.getParameters();
+       this->parameters = param;
+       }
+     
+     
+     
      Plane::~Plane(){}
+     
+     
+     double Plane::getA(){
+       return this->parameters(0);
+       }
+     double Plane::getB(){
+       return this->parameters(1);
+       }
+     double Plane::getC(){
+       return this->parameters(2);
+       }
+     double Plane::getD(){
+       return this->parameters(3);
+       }
+     
+     
+     Plane & Plane::operator= (Plane & plane){
+          this->parameters = plane.getParameters();
+          return *this;    
+     }  
+     
+     
      
      void Plane::print(){
 		 std::cout <<"The shape parameters are:\n" << this->parameters << std::endl;
@@ -189,9 +218,10 @@ int Plane::findParameters(Eigen::MatrixXf & ptsIn,
     
     // test if the inlier set has evoluated
     if (ptsIn.rows()>=nbInPrec){
-      distThreshold /= 2;
+      distThreshold /= 4;
       if  (distThreshold < 0.02) return 1; 
       this->findParameters(ptsIn, ptsOut, distThreshold);
+      //return 1;
     }
     else{ 
       this->findParameters(ptsIn, ptsOut, distThreshold);
@@ -279,6 +309,37 @@ Eigen::Matrix3f Plane::computeOrientation(){
   return R;
 }  
 
+
+/*!
+ * 
+ * Warning this function compute the transformation to align the
+ * frame with the walker frame. That is why the matrix fMw is added.
+ * 
+ */ 
+Eigen::Matrix4f Plane::computeTransformation()
+{
+
+      Eigen::Matrix3f kRg = this->computeOrientation();
+      Eigen::Matrix4f gMk, wMg (MatrixXf::Identity(4,4));
+      gMk.topLeftCorner(3,3) = kRg.inverse() ;
+      gMk.topRightCorner(3,1) << 0,0,0 ;
+      gMk.bottomLeftCorner(1,3) << 0,0,0;
+      gMk.bottomRightCorner(1,1) << 1;
+      
+      Plane tmp(*this);
+      tmp.changeFrame(gMk);
+      wMg.topRightCorner(3,1) << 0,0, tmp.getD()/tmp.getC() ;
+      
+      // to be compatible with the frame of the walker
+      Eigen::Matrix4f fMw(MatrixXf::Identity(4,4));
+      fMw(1,1)=-1;
+      fMw(2,2)=-1;
+      
+      return fMw*wMg*gMk;
+  
+}
+
+
 void Plane::changeFrame(const Eigen::Matrix4f & cMo)
 {
   // Save current plane parameters
@@ -293,6 +354,10 @@ void Plane::changeFrame(const Eigen::Matrix4f & cMo)
   this->parameters(3) = Do - (cMo(0,3)*this->parameters(0) + 
                               cMo(1,3)*this->parameters(1) + 
                               cMo(2,3)*this->parameters(2));
+  
+  // normalise
+  this->parameters/=(-this->parameters(3));
+                              
 }
   
 }

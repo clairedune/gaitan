@@ -14,7 +14,14 @@ namespace gaitan
      Kinect();
      Kinect(string path);
      ~Kinect();
-      
+    
+    int readFile(string filename);
+    int writeInFile(string filename, int precision=15);
+    virtual void print(int beg, int end);
+    virtual void print();
+    void initData();
+    virtual int acquire();
+    
   };
 }
 #endif // kinect_H
