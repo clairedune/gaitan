@@ -42,7 +42,9 @@ class Sensor
     virtual void print(int beg, int end);
     virtual void print();
     void initData();
-    virtual int acquire();
+    
+    
+    virtual int acquire(const std::string &path , bool flagDisp=true)=0;
    
     static Table* synchronizeZeroBloc(Sensor* s1, Sensor* s2);
  

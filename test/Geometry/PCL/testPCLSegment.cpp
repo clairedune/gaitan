@@ -121,8 +121,13 @@ float & a, float & b, float & c, float & d)
 int
 main (int argc, char** argv)
 {
-
-std::string filename;
+  // segmentation parameters
+  // TODO : make a conf file
+  float tolerance (0.05); 
+  int minClusterSize(100);
+  int maxClusterSize(50000);
+  
+  std::string filename;
 
 	if (argc>1){
 		filename = argv[1];
@@ -152,6 +157,8 @@ std::string filename;
       double fx(525.0), fy(525.0), cx(319.05), cy(239.5);
       Conversion::convert(depthMap,pointCloud,fx,fy,cx,cy);
 
+      std::cout << "Point cloud size : " << pointCloud.rows()<< std::endl;
+
       // find the coeff of the main plane
       Eigen::MatrixXf ptsIn(pointCloud), ptsOut(3,1) ;
       double confidence(0.02);
@@ -159,6 +166,7 @@ std::string filename;
       Conversion::convert(pointCloud,simpleCloud);
       Plane plane;
       plane.findParameters(simpleCloud,confidence);
+      plane.print();
       
       // divide the point cloud into two clouds.
       plane.inlierSelection(ptsIn, ptsOut, confidence);
@@ -173,8 +181,8 @@ std::string filename;
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr colorCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
      // Conversion::convert(ptsIn,colorCloud, 255, 0, 0);
       //Conversion::convert(ptsOut,colorCloud, 0, 255,0);
-      //Conversion::convert(gPtsIn,colorCloud, 255, 0, 255);
-      //Conversion::convert(gPtsOut,colorCloud, 0, 255,255);
+      Conversion::convert(gPtsIn,colorCloud, 255, 0, 255);
+      Conversion::convert(gPtsOut,colorCloud, 0, 255,255);
       //colorCloud->width = (int) colorCloud->points.size();
       //colorCloud->height = 1;
       
@@ -196,9 +204,9 @@ std::string filename;
       tree->setInputCloud (cloudFiltered);     
       std::vector<pcl::PointIndices> clusterIndices;
       pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-      ec.setClusterTolerance (0.05); // 5cm
-      ec.setMinClusterSize (100);
-      ec.setMaxClusterSize (50000);
+      ec.setClusterTolerance (tolerance); // 5cm
+      ec.setMinClusterSize (minClusterSize);
+      ec.setMaxClusterSize (maxClusterSize);
       ec.setSearchMethod (tree);
       ec.setInputCloud (cloudFiltered);
       ec.extract (clusterIndices);
@@ -215,6 +223,7 @@ std::string filename;
          cloudCluster->height = 1;
          cloudCluster->is_dense = true;
        
+         if(j<2)
          Conversion::convert(cloudCluster,colorCloud, j*100, j*100,255);
        
          std::cout << "PointCloud representing the Cluster: " << cloudCluster->points.size () << " data points." << std::endl;

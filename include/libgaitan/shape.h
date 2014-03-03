@@ -15,6 +15,7 @@ namespace gaitan
 	
     public:	
      Shape();
+     Shape(const VectorXf & param);
      virtual ~Shape();
      
      VectorXf getParameters();
@@ -24,11 +25,11 @@ namespace gaitan
       * FindParameters : fit the 3D parametric shape to the pts
       * set the parameters of the shape to the fitted one
       */
-     virtual int findParameters(const MatrixXf & pts );
-     virtual VectorXf computeDistance(const MatrixXf & pts);
+     virtual int findParameters(const MatrixXf & pts )=0;
+     virtual VectorXf computeDistance(const MatrixXf & pts)=0;
     
     protected: 
-     virtual float computeDistance(const double &X, const double &Y, const double & Z);
+     virtual float computeDistance(const double &X, const double &Y, const double & Z)=0;
       
   };
 }

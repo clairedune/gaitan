@@ -17,7 +17,6 @@
 int main(int argc, char ** argv) {
 	try {
     	Freenect::Freenect freenect;
-    
     	vpKinect & kinect = freenect.createDevice<vpKinect>(0);
     	// Start acquisition thread with a depth map resolution of 480x640
     	kinect.start(vpKinect::DMAP_MEDIUM_RES); 
@@ -49,10 +48,7 @@ int main(int argc, char ** argv) {
 		std::cout << "Catch an exception: " << e << std::endl;
 		return 1;
 	}
-	catch(...) {
-		std::cout << "Catch an exception " << std::endl;
-		return 1;
-	}
+	
 }
 #else
 int

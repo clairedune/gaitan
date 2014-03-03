@@ -9,6 +9,8 @@ using namespace Eigen;
 namespace gaitan
 {
      Shape::Shape(){}
+    
+     Shape::Shape(const VectorXf & param) : parameters(param){}
      
      Shape::~Shape(){}
      

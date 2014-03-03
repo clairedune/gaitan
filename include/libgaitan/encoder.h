@@ -42,6 +42,7 @@ namespace gaitan
     ~Encoder();
 
     int readFile(string filname);
+    int acquire(const std::string &path , bool flagDisp=true);
     void print(int beg, int end);
     void print();
     void initData();

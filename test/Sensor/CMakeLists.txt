@@ -5,7 +5,8 @@
 #--------------------------------------------
 
 SET (SOURCE
-testSensor.cpp
+#testRGBDSensor.cpp
+#testSensor.cpp
 )
 
 # rule for binary build
@@ -23,7 +24,5 @@ FOREACH(source ${SOURCE})
 
 ENDFOREACH(source)
 
-#add_subdirectory(test)
-
 add_subdirectory(Kinect)
-add_subdirectory(Encoder)
+#add_subdirectory(Encoder)

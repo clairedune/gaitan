@@ -72,6 +72,15 @@ void Encoder::initData()
   
 }
 
+int Encoder::acquire(const std::string &path , bool flagDisp)
+{
+   std::cout << "Encoder::acquire To be implemented ... " << std::endl;
+   return 0;
+    
+  
+  }
+
+
 
 void Encoder::print(int deb, int end){
  cout <<endl<< "----RAW----" << endl;

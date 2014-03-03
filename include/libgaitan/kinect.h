@@ -1,27 +1,32 @@
 #ifndef GAITAN_KINECT_H
 #define GAITAN_KINECT_H
 
-#include <libgaitan/sensor.h>
-#include <libgaitan/table.h>
+#include <libgaitan/rgbdsensor.h>
 
+#include <Eigen/Dense>
+
+#include <stdlib.h>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <iomanip>
 
 
 namespace gaitan
 {
-  class Kinect:public Sensor
+  class Kinect:public RGBDSensor
   {   
     public:	
-     Kinect();
-     Kinect(string path);
+      Kinect();
      ~Kinect();
+      Kinect(double fx, double fy, double cx, double cy);
     
-    int readFile(string filename);
-    int writeInFile(string filename, int precision=15);
-    virtual void print(int beg, int end);
-    virtual void print();
-    void initData();
-    virtual int acquire();
+    
+    int display();
+    int acquire(const std::string &path , bool flagDisp=true);
+    Eigen::MatrixXf pointCloud(const std::string & path,const int &index);
+
     
   };
 }
-#endif // kinect_H
+#endif // RGBDSensor_H

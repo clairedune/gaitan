@@ -32,18 +32,19 @@ namespace gaitan
 class Conversion
 {
   public:
-    static int convert(const vpImage<float>&dmap, vpImage<vpRGBa>&Idmap);
-    static int convert(const vpImage<float>&dmap, Eigen::MatrixXf & depthMat);
+    static int convert(const vpImage<float> & dmap, vpImage<vpRGBa>&Idmap);
+    static int convert(const vpImage<float> & dmap, Eigen::MatrixXf & depthMat);
+    static int convert(const vpImage<float> & dmap, Eigen::MatrixXf & point3D, double fx, double fy, double cx, double cy);
     static int convert(const Eigen::MatrixXf & depthMat, vpImage<float>&dmap);
     static int convert(const Eigen::MatrixXf & depthMat,Eigen::MatrixXf & point3D,double &fx,double &fy,double &cx,double &cy);
     static int convert(const Eigen::MatrixXf & depthMat,pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud,double &fx,double &fy,double &cx,double &cy);
     static int convert(const Eigen::MatrixXf & point3D,Eigen::MatrixXf & depthMat,
-                       const int &height,
-                       const int &width,
-                       double &fx,
-                       double &fy,
-                       double &cx,
-                       double &cy);
+                       const int & height,
+                       const int & width,
+                       double & fx,
+                       double & fy,
+                       double & cx,
+                       double & cy);
    static int convert(const pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr & colorClour, 
                        const int & r, const int & g, const int & b);
    static int convert(const pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud, Eigen::MatrixXf & matrix);                    

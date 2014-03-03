@@ -160,9 +160,10 @@ std::string filename;
       double dif;
    
    
-      double distanceThreshold(0.001);      
+      double distanceThreshold(0.15);      
       //evaluate time
       time (&start);
+      
       plane.findParameters(cloud, distanceThreshold);
       //evaluate time
       time (&end);
@@ -185,10 +186,6 @@ std::string filename;
       std::cout <<  "  La methode de la classe plane  " << std::endl; 
       plane.print(); 
 
-       
-       
-      
-       
       
       distanceThreshold=0.02;
       plane.inlierSelection(ptsIn, ptsOut, distanceThreshold);

@@ -9,10 +9,14 @@ SET (SOURCE
 #testPCLViewer.cpp
 #testPCLViewerPlaneAndCloud.cpp
 #testPlaneOrientation.cpp
-testPCLPlaneFitting.cpp
+#testPCLPlaneFitting.cpp
 #testPCLSegment.cpp
-testPCLSegment-v2.cpp
+#testPCLSegment-v2.cpp
+#testPCLSegment-v3.cpp
+#testPCLSegment-v4.cpp
 #testPCLSegmentMultiImages.cpp
+#testPCLFindBox.cpp
+testPCLUseBoxes.cpp
 )
 
 # rule for binary build

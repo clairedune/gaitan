@@ -1,6 +1,3 @@
-/* \author Geoffrey Biggs */
-
-
 #include <visp/vpConfig.h>
 
 #include <sys/time.h> // to get time
@@ -15,7 +12,7 @@
 
 #include <libgaitan/plane.h>
 #include <libgaitan/conversion.h>
-
+#include <libgaitan/kinect.h>
 
 #if (defined (VISP_HAVE_X11) || defined(VISP_HAVE_GTK) || defined(VISP_HAVE_OPENCV) || defined(VISP_HAVE_GDI))
 #include <visp/vpImage.h>
@@ -50,34 +47,13 @@ using namespace gaitan;
 #include <pcl/segmentation/extract_clusters.h>
 
 
-/*!
- *  align the camera frame with the ground
- */
-Eigen::MatrixXf changeFrame(const Eigen::MatrixXf & oP,const Eigen::Matrix4f & wMo)
-{
-   Eigen::MatrixXf wP(oP.rows(),oP.cols());
-   for(int i = 0 ; i < oP.rows(); i++ ){
-      // create an homogenous point from 3D coordinate
-      Eigen::Vector4f oPi;
-      oPi(0) = oP(i,0);
-      oPi(1) = oP(i,1);
-      oPi(2) = oP(i,2);
-      oPi(3) = 1;
-      // change frame
-      Eigen::Vector4f wPi  = wMo*oPi;
-      // insert in the matrix
-      wP(i,0) = wPi(0);
-      wP(i,1) = wPi(1);
-      wP(i,2) = wPi(2);
-   }
-   return wP;
-}
+
 
 
 
 
 boost::shared_ptr<pcl::visualization::PCLVisualizer> shapesVis (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud,
-float & a, float & b, float & c, float & d)
+float  a, float  b, float  c, float  d)
 {
   // --------------------------------------------
   // -----Open 3D viewer and add point cloud-----
@@ -122,100 +98,77 @@ int
 main (int argc, char** argv)
 {
 
-std::string filename;
 
+ //------------- INIT -----------------------------------------//
+
+  //data folder path
+  std::string path;
+  //data filename
+  std::string filename("depth_%07d.pfm"), fullPath;
+  //number of images to treat
+  int nbIm;
+ 
+  // get the path name
 	if (argc>1){
-		filename = argv[1];
+		path = argv[1];
 	}
 	else {
-		filename="/home/dune/Documents/data/kinect/essai1/depth_0000000.pfm";
+    path ="/home/dune/Documents/data/kinect/essai1";
   }
   
-  std::cout << "filename : "<< filename << std::endl;   
-	
-	try {
-    
-      int width(640), height(480);
-      vpImage<float> dmap(height,width);//for medium resolution
-
-      // read the image
-      try{
-          vpImageIo::readPFM(dmap,filename.c_str());
-        }
-      catch(...){
-              std::cout << "Catch an exception when reading image " << filename << std::endl;
-      }
+  // get the number of the image to treat
+  if (argc>2){
+    nbIm = atoi(argv[2]);
+    }
+  else  nbIm = 0;
+   
+   
+  // segmentation parameters
+  // TODO : make a conf file
+  float clusterTolerance (0.04); 
+  int minClusterSize(150);
+  int maxClusterSize(50000);
+  double planeDistThreshold(0.02);
+  float leafSize(0.005); 
+   
+  //-------------------------------------------------------------//
         
-      // copy the matrix in an eigen mat
-      Eigen::MatrixXf depthMap, pointCloud;
-      Conversion::convert(dmap, depthMap);
+      // create the kinect sensor model to handle the images
       double fx(525.0), fy(525.0), cx(319.05), cy(239.5);
-      Conversion::convert(depthMap,pointCloud,fx,fy,cx,cy);
-
-      // find the coeff of the main plane
-      Eigen::MatrixXf ptsIn(pointCloud), ptsOut(3,1) ;
-      double confidence(0.02);
+      Kinect * kinect= new Kinect(fx,fy,cx,cy);  
       
-      Plane plane;
-      plane.findParameters(ptsIn, ptsOut, confidence);
-      plane.print();
-      plane.inlierSelection(ptsIn, ptsOut, confidence);
-
+      // create the point cloud as an eigen matrix
+      Eigen::MatrixXf pointCloud = kinect->pointCloud(path,nbIm);
       
-      //change point frame
-      Eigen::Matrix4f gMk = plane.computeTransformation();
-      plane.changeFrame(gMk);
-      Eigen::MatrixXf gPtsIn  = changeFrame(ptsIn,gMk);
-      Eigen::MatrixXf gPtsOut = changeFrame(ptsOut,gMk);
-      
-      //populate cloud     
-      pcl::PointCloud<pcl::PointXYZRGB>::Ptr colorCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-     // Conversion::convert(ptsIn,colorCloud, 255, 0, 0);
-      //Conversion::convert(ptsOut,colorCloud, 0, 255,0);
-      //Conversion::convert(gPtsIn,colorCloud, 255, 0, 255);
-      //Conversion::convert(gPtsOut,colorCloud, 0, 255,255);
-      //colorCloud->width = (int) colorCloud->points.size();
-      //colorCloud->height = 1;
-      
-      pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-      Conversion::convert(gPtsOut,cloud);
-      std::cout << "PointCloud before filtering has: " << cloud->points.size ()  << " data points." << std::endl; //*
-      
-      // Create the filtering object: downsample the dataset using a leaf size of 1cm
-      pcl::VoxelGrid<pcl::PointXYZ> vg;
-      pcl::PointCloud<pcl::PointXYZ>::Ptr cloudFiltered (new pcl::PointCloud<pcl::PointXYZ>);
-      vg.setInputCloud (cloud);
-      vg.setLeafSize (0.01f, 0.01f, 0.01f);
-      vg.filter (*cloudFiltered);
-      std::cout << "PointCloud after filtering has: " << cloudFiltered->points.size ()  << " data points." << std::endl; //*
-
-      
-      // Creating the KdTree object for the search method of the extraction
-      pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
-      tree->setInputCloud (cloudFiltered);     
+      // detect clusters
+      pcl::PointCloud<pcl::PointXYZ>::Ptr cloudFeetFiltered (new pcl::PointCloud<pcl::PointXYZ>);
       std::vector<pcl::PointIndices> clusterIndices;
-      pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-      ec.setClusterTolerance (0.05); // 5cm
-      ec.setMinClusterSize (100);
-      ec.setMaxClusterSize (50000);
-      ec.setSearchMethod (tree);
-      ec.setInputCloud (cloudFiltered);
-      ec.extract (clusterIndices);
-
-
+      kinect->detectClusters(pointCloud, cloudFeetFiltered, clusterIndices,clusterTolerance, 
+                                  minClusterSize,
+                                  maxClusterSize,
+                                  planeDistThreshold, 
+                                  leafSize);    
+    
+    
+      int j=0;
       // Creating the Clusters
-      int j(0);
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr colorCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
       for (std::vector<pcl::PointIndices>::const_iterator it = clusterIndices.begin (); it != clusterIndices.end (); ++it)
       {
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloudCluster (new pcl::PointCloud<pcl::PointXYZ>);
         for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); pit++)
-         cloudCluster->points.push_back (cloudFiltered->points[*pit]); 
+         cloudCluster->points.push_back (cloudFeetFiltered->points[*pit]); 
          cloudCluster->width = cloudCluster->points.size ();
          cloudCluster->height = 1;
          cloudCluster->is_dense = true;
        
-         Conversion::convert(cloudCluster,colorCloud, j*100, j*100,255);
-       
+         if (j==0)
+            Conversion::convert(cloudCluster,colorCloud, 255, 0,0);
+         else  if (j==1)
+            Conversion::convert(cloudCluster,colorCloud, 0,255,0);
+         else 
+            Conversion::convert(cloudCluster,colorCloud, 0,0,50*j);
+         
          std::cout << "PointCloud representing the Cluster: " << cloudCluster->points.size () << " data points." << std::endl;
          j++;
       }
@@ -228,23 +181,14 @@ std::string filename;
       
       // viewer
       boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
-      Eigen::VectorXf param = plane.getParameters(); 
-      viewer = shapesVis(colorCloud, param(0), param(1), param(2), param(3));
+      viewer = shapesVis(colorCloud,0.0f, 0.0f, 1.0f, 0.0f);
  
       while (!viewer->wasStopped ())
       {
         viewer->spinOnce (100);
         boost::this_thread::sleep (boost::posix_time::microseconds (100000));
       }
-    }
-	  catch(vpException e) {
-		  std::cout << "Catch an exception: " << e << std::endl;
-		  return -1;
-	  }
-	  catch(...){
-		  std::cout << "Catch an exception " << std::endl;
-		  return -1;
-	  }
+   
 }
 #else
 int

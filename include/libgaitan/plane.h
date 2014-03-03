@@ -26,19 +26,21 @@ namespace gaitan
      Plane();
      Plane(const double& a, const double& b, const double& c, const double&d);
      Plane(const Vector4f& param);
-     Plane(Plane & plane);
+     //Plane(const Plane& plane);
      ~Plane();
-          
-    Plane & operator = (Plane &);      
+             
+     Plane& operator=(Plane plane);      
+      
+     void setParameters(double a, double b, double c, double d);     
           
      double  getA();
      double  getB();
      double  getC();
      double  getD();
           
-     virtual int findParameters(const MatrixXf& pts );
-     virtual VectorXf computeDistance(const MatrixXf& pts);
-     virtual VectorXf computeError(const MatrixXf& pts);
+     int findParameters(const MatrixXf& pts );
+     VectorXf computeDistance(const MatrixXf& pts);
+     VectorXf computeError(const MatrixXf& pts);
      
      void print(); 
      

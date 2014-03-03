@@ -74,7 +74,7 @@ int Sensor::readFile(string filename){
   return this->_data->createFromFile(filename);
 }
 
-int Sensor::acquire(){}
+//int Sensor::acquire(){}
 
 
 // First column is time

@@ -8,13 +8,16 @@ SET (SOURCE
 #testVispKinect.cpp
 #testOpenNi.cpp
 #testFreenect.cpp
-testKinectDisplay.cpp
-testKinect.cpp
-testKinectAcquire.cpp
-testKinectRead.cpp
+#testKinectDisplay.cpp
+#taestKinect.cpp
+#testKinectAcquire.cpp
+#testKinectRead.cpp
 #testKinectConvertToEigenMatrix.cpp
 #testKinectDetectGround.cpp
 #testKinectConvert.cpp
+testKinectBoxSelectionMultiImage.cpp # set box and use it to split the ptcloud
+#testKinectCalibrationMultiImage.cpp #detect a plane and use it to split the ptcloud
+#testKinectCalibrationMultiImage-v2.cpp #using directly the param of kinect 
 )
 
 # rule for binary build

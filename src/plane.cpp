@@ -5,7 +5,7 @@
 
 #include <pcl/common/common_headers.h>
 
-
+   
 using namespace Eigen;
 
 namespace gaitan
@@ -27,15 +27,23 @@ namespace gaitan
       this->parameters = param;
      }
      
-     Plane::Plane(Plane & plane){
-       Vector4f param = plane.getParameters();
-       this->parameters = param;
-       }
+//     Plane::Plane(const Plane & plane){
+//       }
      
      
      
      Plane::~Plane(){}
      
+     
+     void Plane::setParameters(double a, double b, double c, double d){
+         this->parameters.resize(4);
+		   this->parameters(0) = a;
+       this->parameters(1) = b;
+       this->parameters(2) = c;
+       this->parameters(3) = d; 
+       
+       }     
+
      
      double Plane::getA(){
        return this->parameters(0);
@@ -51,7 +59,7 @@ namespace gaitan
        }
      
      
-     Plane & Plane::operator= (Plane & plane){
+     Plane & Plane::operator= (Plane  plane){
           this->parameters = plane.getParameters();
           return *this;    
      }  
@@ -251,10 +259,10 @@ int Plane::findParameters(const pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud, dou
       seg.setInputCloud (cloud->makeShared ());
       seg.segment (*inliers, *coefficients);
       
-      std::cerr << "Model coefficients: " << coefficients->values[0] << " " 
-                                      << coefficients->values[1] << " "
-                                      << coefficients->values[2] << " " 
-                                      << coefficients->values[3] << std::endl;  
+      //std::cerr << "Model coefficients: " << coefficients->values[0] << " " 
+      //                                << coefficients->values[1] << " "
+      //                                << coefficients->values[2] << " " 
+      //                                << coefficients->values[3] << std::endl;  
                                       
                                       
        this->parameters(0) = -coefficients->values[0]/coefficients->values[3];
@@ -356,7 +364,8 @@ void Plane::changeFrame(const Eigen::Matrix4f & cMo)
                               cMo(2,3)*this->parameters(2));
   
   // normalise
-  this->parameters/=(-this->parameters(3));
+  if(this->parameters(3)!=0)
+    this->parameters/=(-this->parameters(3));
                               
 }
   
