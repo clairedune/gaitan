@@ -167,6 +167,8 @@ main (int argc, char** argv)
   
   leafSize=0.01;
   kinect->initForbiddenBoxes(gPtsFeetNWheels,clusterTolerance, minClusterSize, maxClusterSize,leafSize);
+  kinect->saveConfFile(path);
+
 
   for(int i=0 ; i< kinect->forbiddenZone.size() ; i++)
   {

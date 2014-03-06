@@ -66,7 +66,7 @@ void userInput (int argc, char** argv, std::string& path, std::string &pattern, 
   if (argc>2){
     nbIm = atoi(argv[2]);
     }
-  else  nbIm = 50;  
+  else  nbIm = 0;  
 }
 
 
@@ -107,12 +107,12 @@ float  a, float  b, float  c, float  d)
   //---------------------------------------
   //-----Add shapes at other locations-----
   //---------------------------------------
-  //pcl::ModelCoefficients coeffs;
-  //coeffs.values.push_back (a);
-  //coeffs.values.push_back (b);
-  //coeffs.values.push_back (c);
-  //coeffs.values.push_back (d);
- //viewer->addPlane (coeffs, "plane");
+  pcl::ModelCoefficients coeffs;
+  coeffs.values.push_back (a);
+  coeffs.values.push_back (b);
+  coeffs.values.push_back (c);
+  coeffs.values.push_back (d);
+ viewer->addPlane (coeffs, "plane");
 
   return (viewer);
 }
@@ -135,105 +135,73 @@ main (int argc, char** argv)
   
   // segmentation parameters
   // TODO : make a conf file
-  float clusterTolerance (0.04); 
-  int minClusterSize(150);
-  int maxClusterSize(50000);
-  double confidence(0.02);
-  float leafSize(0.008); 
-   
+  float clusterTolerance (0.04); // min dist between two cluster
+  int minClusterSize(150);       // min size of a cluster
+  int maxClusterSize(50000);     // max size of a cluster
+  double confidence(0.02);       // confidence for plane detection
+  float leafSize(0.005);          // size of the grid a filtered point cloud
+  double distThreshold(0.02);    // min point-to-plane distance when removing points belonging to ground plane
+
   //-------------------------------------------------------------//
         
-  // create the kinect sensor model to handle the images
-  Kinect * kinect= new Kinect();  
+  double fx(525.0), fy(525.0), cx(319.05), cy(239.5);
+  Kinect * kinect= new Kinect(fx,fy,cx,cy);  
       
   // create the point cloud as an eigen matrix
   Eigen::MatrixXf pointCloud = kinect->pointCloud(path,nbIm);
       
-  // detect clusters
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloudFeetFiltered (new pcl::PointCloud<pcl::PointXYZ>);
-  std::vector<pcl::PointIndices> clusterIndices;
-  kinect->detectClusters(pointCloud, cloudFeetFiltered, clusterIndices,clusterTolerance, 
-                         minClusterSize,
-                         maxClusterSize,
-                         confidence, 
-                         leafSize);    
-    
-    
-  int j=0;
+  // init the kinect pose wrt the ground
+  Plane ground = kinect->extrinsicCalibration(pointCloud,confidence,leafSize);    
   
-  Box leftFoot, rightFoot, leftWheel, rightWheel;
+  // select the points that are not on the ground
+  Eigen::MatrixXf ptsFeetNWheels(1,3) ;
+  kinect->clearGroundPoints(pointCloud,ptsFeetNWheels,distThreshold,&ground);  
   
-  // Creating the Clusters
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr colorCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-  for (std::vector<pcl::PointIndices>::const_iterator it = clusterIndices.begin (); it != clusterIndices.end (); ++it)
-      {
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloudCluster (new pcl::PointCloud<pcl::PointXYZ>);
-        for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); pit++)
-         cloudCluster->points.push_back (cloudFeetFiltered->points[*pit]); 
-         cloudCluster->width = cloudCluster->points.size ();
-         cloudCluster->height = 1;
-         cloudCluster->is_dense = true;
-         
-         
-         // create a MAtrix clusterot
-         Eigen::MatrixXf ptsCluster;
-         Conversion::convert(cloudCluster, ptsCluster);                    
-         
-         if (j==0){
-            //Conversion::convert(cloudCluster,colorCloud, 255, 0,0);
-            leftFoot.findParameters(ptsCluster);
-            leftFoot.print();
-          }
-            
-            
-         else  if (j==1){
-            //Conversion::convert(cloudCluster,colorCloud, 0,255,0);
-            rightFoot.findParameters(ptsCluster);
-          }
-          
-         else  if (j==2){
-            //Conversion::convert(cloudCluster,colorCloud, 0,255,255);
-            leftWheel.findParameters(ptsCluster);
-          }
-         else  if (j==3){
-            //Conversion::convert(cloudCluster,colorCloud, 0,255,255);
-            rightWheel.findParameters(ptsCluster);
-          }
-          
-          
-         else 
-            Conversion::convert(cloudCluster,colorCloud, 0,0,50*j);
-         
-         std::cout << "PointCloud representing the Cluster: " << cloudCluster->points.size () << " data points." << std::endl;
-         j++;
-      }
-    std::cout << "There are " << j << " clusters " << endl;
-      
-      
-   // Eigen::MatrixXf ptsIn(pointCloud), ptsOut(1,3);
-   // double inlierThres(confidence*2);
+  // change the points frame
+  Eigen::MatrixXf gPtsFeetNWheels  = kinect->changeFrame(ptsFeetNWheels);     
+  Eigen::MatrixXf gPointCloud  = kinect->changeFrame(pointCloud);     
   
-//    leftWheel.inlierSelection(ptsIn, ptsOut, inlierThres);
- //   Conversion::convert(ptsIn,colorCloud, 255,0,0);
-    
-   // ptsIn = ptsOut;
-    
-    //rightWheel.inlierSelection(ptsIn, ptsOut, inlierThres);
-    //Conversion::convert(ptsIn, colorCloud, 255,0,0);
-    //Conversion::convert(ptsOut, colorCloud, 0,255,0);
-    
-      
+  std :: cout << pointCloud.rows() << std::endl;
+  std :: cout << ptsFeetNWheels.rows() << std::endl;
+  std :: cout << gPtsFeetNWheels.rows() << std::endl;
+  
+  leafSize=0.01;
+  kinect->initForbiddenBoxes(gPtsFeetNWheels,clusterTolerance, minClusterSize, maxClusterSize,leafSize);
+
+  for(int i=0 ; i< kinect->forbiddenZone.size() ; i++)
+  {
+      std::cout << "----- "<< i << " ----- " << endl; 
+      kinect->forbiddenZone[i].print();  
+  }
+  
+
       
       
       // viewer
+
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr colorCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+      Conversion::convert(gPtsFeetNWheels,colorCloud, 0, 255,0);
+      Conversion::convert(gPointCloud,colorCloud, 255, 0,0);
+
       boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
       viewer = shapesVis(colorCloud,0.0f, 0.0f, 1.0f, 0.0f);
-      cubeVis(viewer, leftFoot, 1.0, 0.0,0.0, "LF");
-      cubeVis(viewer, rightFoot, 0.0, 1.0,0.0, "RF");
-      cubeVis(viewer, leftWheel, 0.0, 1.0,1.0, "LW");
-      cubeVis(viewer, rightWheel, 0.0, 1.0,1.0, "RW");
       
-	    
+      
+      if (kinect->forbiddenZone.size()>=1) 
+        cubeVis(viewer, kinect->forbiddenZone[0], 1.0, 1.0,1.0, "underground");
+      
+      if (kinect->forbiddenZone.size()>=2)  
+        cubeVis(viewer, kinect->forbiddenZone[1], 1.0, 0.0,0.0, "LF");
+      
+      if (kinect->forbiddenZone.size()>=3) 
+        cubeVis(viewer, kinect->forbiddenZone[2], 0.0, 1.0,0.0, "RF");
+      
+      if (kinect->forbiddenZone.size()>=4) 
+        cubeVis(viewer, kinect->forbiddenZone[3], 0.0, 1.0,1.0, "LW");
+      
+      if (kinect->forbiddenZone.size()>=5) 
+        cubeVis(viewer, kinect->forbiddenZone[4], 0.0, 1.0,1.0, "RW");
+      
    
       while (!viewer->wasStopped ())
       {

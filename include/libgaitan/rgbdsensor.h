@@ -4,6 +4,7 @@
 #include <libgaitan/sensor.h>
 #include <libgaitan/table.h>
 #include <libgaitan/plane.h>
+#include <libgaitan/box.h>
 
 #include <Eigen/Dense>
 
@@ -36,12 +37,19 @@ namespace gaitan
      // pose of the sensor in a frame attached to the ground
      Eigen::Matrix4f gMk ; /*! pose of the sensor wrt the ground */
      
+
+     
      // name of the filename for RGB data, depth data, and time data
      std::string rgbFilenamePattern ; /*! root name for rgb file */
      std::string depthFilenamePattern ; /*! root name for depth file*/
      std::string timeFilename ; /*! root name for time file*/
+     std::string confFilename ; /*! path to the conf file*/
      
      
+    public :
+     // invalid zone made of boxes
+     std::vector<Box> forbiddenZone; 
+    
     
     public:	
     
@@ -54,6 +62,22 @@ namespace gaitan
      // sensor class methods
      void init();
      void print();
+     
+     //config
+     int saveConfFile(const std::string &pathName);
+     
+     //config
+     int loadConfFile(const std::string &pathName);
+     
+     //time
+     int loadTimeLine(const std::string &pathName);
+     
+     // rgbd sensor method
+     void setRgbFilenamePattern(const std::string &s){this->rgbFilenamePattern=s;}
+     void setDepthFilenamePattern(const std::string &s){this->depthFilenamePattern=s;}
+     void setTimeFilename(const std::string &s){this->timeFilename=s;}
+     void setConfFilename(const std::string &s){this->confFilename=s;}
+     
     
     
     /*!
@@ -64,22 +88,28 @@ namespace gaitan
     
     
     /*! \brief compute the transformation between the kinect and the ground frame
+     *  \param is an eigen matrix
      */
-    int extrinsicCalibration(const Eigen::MatrixXf& pointCloud,double confidence=0.02,
+    Plane extrinsicCalibration(const Eigen::MatrixXf& pointCloud,double confidence=0.02,
+                 float lsize=0.01);
+                 
+    /*! \brief compute the transformation between the kinect and the ground frame
+     *  \param is a PCL point Cloud
+     */
+    Plane extrinsicCalibration(const pcl::PointCloud<pcl::PointXYZ>::Ptr& simpleCloud,double confidence=0.02,
                  float lsize=0.01);
 
-    /*! \brief create the depth filename using the num of the image and the folder pathname
-     */
-    std::string depthPath(std::string pathName, const int& imNb);
-    /*! \brief create the rgb filename using the num of the image and the folder pathname
-     */
-    std::string rgbPath(std::string pathName, const int& imNb);
-    /*! \brief create the time filename using the folder pathname
-     */
-    std::string timePath(std::string pathName);
+
+    /*! \brief create the depth filename using the num of the image and the folder pathname*/
+    std::string depthPath(const std::string &pathName, const int& imNb);
+    /*! \brief create the rgb filename using the num of the image and the folder pathname*/
+    std::string rgbPath(const std::string &pathName, const int& imNb);
+    /*! \brief create the time filename using the folder pathname*/
+    std::string timePath(const std::string &pathName);
+    /*! \brief create the conf filename using the folder pathname*/
+    std::string confPath(const std::string &pathName);
     
-    /*! \brief create the depth filename using the num of the image and the folder pathname
-     */
+    /*! \brief create the depth filename using the num of the image and the folder pathname*/
     Plane ground(const Eigen::MatrixXf& pointCloud,  double confidence=0.02);
     Plane ground(const pcl::PointCloud<pcl::PointXYZ>::Ptr& simpleCloud,  double confidence=0.02);
     
@@ -107,14 +137,33 @@ namespace gaitan
     int detectClusters(const Eigen::MatrixXf& pointCloud, 
                              pcl::PointCloud<pcl::PointXYZ>::Ptr&  cloudFeetFiltered,
                              std::vector<pcl::PointIndices>& clusterIndices,
-                                  float clusterTolerance=0.05, 
-                                  int minClusterSize=100,
-                                  int maxClusterSize=10000,
-                                  double planeDistThreshold=0.02,  
-                                  float leafSize=0.01);
+                             float clusterTolerance=0.04, 
+                             int minClusterSize=100,
+                             int maxClusterSize=50000,
+                             float leafSize=0.01);
+                             
+    int detectClusters(const Eigen::MatrixXf& pointCloud, 
+                            pcl::PointCloud<pcl::PointXYZ>::Ptr&  cloudFeetFiltered,
+                            std::vector<pcl::PointIndices>& clusterIndices,
+                            float clusterTolerance=0.04, 
+                            int minClusterSize=100,
+                            int maxClusterSize=50000,
+                            double planeDistThreshold=0.02, 
+                            float leafSize=0.01);                         
+                             
     
-    int removeGroundPoints(Eigen::MatrixXf ptsIn,Eigen::MatrixXf ptsOut,double distThreshold)   ;
+    /*! remove the points that are on the ground ie z=0 */
+    int clearGroundPoints( Eigen::MatrixXf & ptsIn, Eigen::MatrixXf & ptsOut, double distThreshold, Plane* gplane=new Plane(0,0,1,0))   ;
 
+    /*! remove the points that are in the forbidden area */ 
+    int clearForbiddenZone( Eigen::MatrixXf & ptsIn, Eigen::MatrixXf & ptsOut, double distThreshold ); 
+
+    /*! init the list of boxes where the points have to be removed Valid only in ground frame*/
+    int initForbiddenBoxes(const Eigen::MatrixXf & pts,
+                          float clusterTolerance=0.04, 
+                          int minClusterSize=150,
+                          int maxClusterSize=10000,
+                          float leafSize=0.01);
     
     
     

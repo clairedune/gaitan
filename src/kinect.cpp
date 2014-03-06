@@ -68,11 +68,11 @@ namespace gaitan
    /*!
    * \brief kinect constructor with defaut kinect parameters
    */
-   Kinect::Kinect() : RGBDSensor(525.0,525.0,319.05, 239.5)
+   Kinect::Kinect() : RGBDSensor(594.0,591.0,339.05, 247.5)
    {
      return;
    }
-      
+
       
    Kinect::Kinect(double fx, double fy, double cx, double cy) 
   {  
@@ -217,11 +217,11 @@ namespace gaitan
 		    std::cout << "Stop acquisition" << std::endl;
 		    kinect.stop(); // Stop acquisition thread
         if  (file) file.close();
-		    return 0;
+		    return 1;
 	    }	
 	    catch(vpException e) {
 		    std::cout << "Catch an exception: " << e << std::endl;
-        return 1;
+        return 0;
       }
 
   }

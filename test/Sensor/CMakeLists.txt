@@ -5,7 +5,8 @@
 #--------------------------------------------
 
 SET (SOURCE
-#testRGBDSensor.cpp
+testRGBDSensorInitConf.cpp
+testRGBDSensorReadConf.cpp
 #testSensor.cpp
 )
 

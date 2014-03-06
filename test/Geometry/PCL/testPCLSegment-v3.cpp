@@ -7,7 +7,7 @@
 #include <string>
 #include <iomanip>
 #include <math.h>
-
+  
 #include <Eigen/Dense>
 
 #include <libgaitan/plane.h>

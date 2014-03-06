@@ -13,7 +13,7 @@ SET (SOURCE
 #testPCLSegment.cpp
 #testPCLSegment-v2.cpp
 #testPCLSegment-v3.cpp
-#testPCLSegment-v4.cpp
+testPCLSegment-v4.cpp
 #testPCLSegmentMultiImages.cpp
 #testPCLFindBox.cpp
 testPCLUseBoxes.cpp

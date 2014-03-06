@@ -74,6 +74,8 @@ int main(int argc, char ** argv) {
         if(file){
 	  			    file << index << "\t";
               file << std::setprecision(precision) <<kinectTime << "\n";	 
+              file.flush();
+              //std::cout << "------- TIME ----- " << std::setprecision(precision)<<kinectTime << std::endl;
 			      }
  
         
@@ -112,6 +114,7 @@ int main(int argc, char ** argv) {
 		std::cout << "Stop acquisition" << std::endl;
 		kinect.stop(); // Stop acquisition thread
     if  (file) file.close();
+    std::cout << "The time file is closed" << std::endl;
 		return 0;
 	}	
 	catch(vpException e) {

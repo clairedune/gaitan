@@ -1,8 +1,13 @@
 #ifndef GAITAN_BOX_H
 #define GAITAN_BOX_H
 
-#include<libgaitan/shape.h>
-#include<Eigen/Dense>
+#include <iostream>
+#include <stdlib.h>
+#include <vector>
+
+#include <libgaitan/shape.h>
+#include <Eigen/Dense>
+
 
 // TODO : surcharger les operation << et =
 //
@@ -42,10 +47,17 @@ namespace gaitan
      
      void print(); 
      
+     
      int inlierSelection( Eigen::MatrixXf & ptsIn, 
                           Eigen::MatrixXf & ptsOut, 
                           double & distThreshold);
      
+     static int inlierSelection( std::vector<Box>& boxes,
+                                 Eigen::MatrixXf & ptsIn, 
+                                 Eigen::MatrixXf & ptsOut, 
+                                 double & distThreshold);
+     
+     bool isInBox(float x, float y, float z, float S);
      
      int findParameters(const MatrixXf & pts );
      VectorXf computeDistance(const MatrixXf & pts);

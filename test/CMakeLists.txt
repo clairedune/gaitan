@@ -28,5 +28,6 @@ FOREACH(source ${SOURCE})
 
 ENDFOREACH(source)
 
-#add_subdirectory(Sensor) 
+add_subdirectory(Sensor) 
 add_subdirectory(Geometry)
+add_subdirectory(Application)

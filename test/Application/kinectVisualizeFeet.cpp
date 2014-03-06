@@ -144,11 +144,22 @@ main (int argc, char** argv)
 
   //-------------------------------------------------------------//
         
-  double fx(525.0), fy(525.0), cx(319.05), cy(239.5);
-  Kinect * kinect= new Kinect(fx,fy,cx,cy);  
+//  double fx(525.0), fy(525.0), cx(319.05), cy(239.5);
+  Kinect * kinect= new Kinect();  
+  if(!kinect->loadConfFile(path))
+  {
+  
+      std::cerr   <<"No configuration file found. You need to init the kinect first"  << std::endl;
+      return -1;
+  }
+  
+  //kinect->print();  
+    
       
   // create the point cloud as an eigen matrix
   Eigen::MatrixXf pointCloud = kinect->pointCloud(path,nbIm);
+  
+  if(pointCloud.rows()<1) return -2;
       
   // init the kinect pose wrt the ground
   Plane ground = kinect->extrinsicCalibration(pointCloud,confidence,leafSize);    
@@ -165,24 +176,15 @@ main (int argc, char** argv)
   std :: cout << ptsFeetNWheels.rows() << std::endl;
   std :: cout << gPtsFeetNWheels.rows() << std::endl;
   
-  leafSize=0.01;
-  kinect->initForbiddenBoxes(gPtsFeetNWheels,clusterTolerance, minClusterSize, maxClusterSize,leafSize);
-
-  for(int i=0 ; i< kinect->forbiddenZone.size() ; i++)
-  {
-      std::cout << "----- "<< i << " ----- " << endl; 
-      kinect->forbiddenZone[i].print();  
-  }
-  
       
-      Eigen::MatrixXf gPtsWheels(gPtsFeetNWheels), gPtsFeet(1,3); 
-      kinect->clearForbiddenZone(gPtsWheels, gPtsFeet, distThreshold);
+  Eigen::MatrixXf gPtsWheels(gPtsFeetNWheels), gPtsFeet(1,3); 
+  kinect->clearForbiddenZone(gPtsWheels, gPtsFeet, distThreshold);
              
       // viewer
 
-      pcl::PointCloud<pcl::PointXYZRGB>::Ptr colorCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-      Conversion::convert(gPtsWheels,colorCloud, 0, 0,255);
-      Conversion::convert(gPointCloud,colorCloud, 255, 0,0);
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr colorCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    //  Conversion::convert(gPtsWheels,colorCloud, 0, 0,255);
+     // Conversion::convert(gPointCloud,colorCloud, 255, 0,0);
       Conversion::convert(gPtsFeet,colorCloud, 0, 255,0);
 
       boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;

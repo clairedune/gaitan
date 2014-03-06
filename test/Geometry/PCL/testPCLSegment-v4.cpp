@@ -148,11 +148,16 @@ main (int argc, char** argv)
                                   maxClusterSize,
                                   planeDistThreshold, 
                                   leafSize);    
-    
-    
+                                  
+                                  
+      std::cout << "Size of the filtered cloud : " << cloudFeetFiltered->points.size() << std::endl;                          
+  
       int j=0;
+      
+      
       // Creating the Clusters
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr colorCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+      
       for (std::vector<pcl::PointIndices>::const_iterator it = clusterIndices.begin (); it != clusterIndices.end (); ++it)
       {
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloudCluster (new pcl::PointCloud<pcl::PointXYZ>);

@@ -49,6 +49,8 @@
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/segmentation/extract_clusters.h>
+#include <pcl/point_types.h>
+#include <pcl/filters/passthrough.h>
 
 namespace gaitan
 {
@@ -63,8 +65,17 @@ namespace gaitan
       rgbFilenamePattern("RGB_%07d.ppm"),
       depthFilenamePattern("depth_%07d.pfm"),
       timeFilename("TimeSampling.dat"),
+      confFilename("conf.dat"),
       gMk(Eigen::MatrixXf::Identity(4,4)), 
-      fx(), fy(), cx(), cy(){ return;}
+      fx(), fy(), cx(), cy(){ 
+        
+      this->_data  = new Table(2,10);
+      // to remove all the artifacts under the ground
+      Box underground (-10,10, -10, 10, -10,0);  
+      forbiddenZone.push_back(underground);
+    
+        
+      }
       
   
   /*!
@@ -77,8 +88,13 @@ namespace gaitan
   : Sensor(),rgbFilenamePattern("RGB_%07d.ppm"),
     depthFilenamePattern("depth_%07d.pfm"),
     timeFilename("TimeSampling.dat"),
+    confFilename("conf.dat"),
     gMk(Eigen::MatrixXf::Identity(4,4))  
   {  
+   
+   // to remove all the artifacts under the ground
+      Box underground (-10,10, -10, 10, -10,0);  
+      forbiddenZone.push_back(underground);
    
    this->fx = fx ; 
    this->fy = fy ; 
@@ -112,8 +128,6 @@ namespace gaitan
    /*! 
    * \brief display the parameters of the Sensor 
    * 
-   * 
-   * 
    */
   void RGBDSensor::print()
   {
@@ -124,10 +138,101 @@ namespace gaitan
          << "cx = " << this->cx << "\t"
          << "cy = " << this->cy << std::endl;    
     std::cout << "external parameters : \n";
-    std::cout << this->gMk << std::endl;      
+    std::cout << this->gMk << std::endl;  
+    
+    for (std::vector<Box>::iterator it = this->forbiddenZone.begin() ; it != this->forbiddenZone.end(); ++it)
+      {
+        (*it).print();
+      }    
     
   }
+  
+/*! Write a conf file with the sensor param and the authorized areas */
+int RGBDSensor::saveConfFile(const std::string &pathName)
+  {
+  
+    std::string filename = confPath(pathName);
+    std::ofstream file(filename.c_str(), std::ios::out);
 
+	  if(file){
+	  			file << this->fx << "\t" << this->fy << "\t" << this->cx << "\t" << this->cy << std::endl; 
+          file << this->gMk << std::endl;
+          file << this->forbiddenZone.size()<< std::endl;
+          for (std::vector<Box>::iterator it = this->forbiddenZone.begin() ; it != forbiddenZone.end(); ++it)
+          {
+            file<< (*it).getMinX() << "\t"<<(*it).getMaxX()<< std::endl;
+            file<< (*it).getMinY() << "\t"<<(*it).getMaxY()<< std::endl;
+            file<< (*it).getMinZ() << "\t"<<(*it).getMaxZ()<< std::endl;
+          }
+      		file.close();
+    	}
+    else 
+    {
+      std::cerr << "impossible d'ouvrir le fichier " << this->confFilename<<std::endl;
+      return 0;
+    }
+     return 1;  
+  }
+  
+  
+/*! Read the time file and set the data */
+int RGBDSensor::loadTimeLine(const std::string &pathName)
+{
+   std::string filename = this->timePath(pathName); 
+   this->_data->createFromFile(filename);
+}  
+
+/*! Read the conf file to set the fobidden area value */
+int RGBDSensor::loadConfFile(const std::string &pathName)
+{
+    std::string filename = confPath(pathName);
+    //std::ofstream file(filename.c_str(), std::ios::out);
+    std::ifstream file(filename.c_str(), std::ios::in);
+    
+    forbiddenZone.clear();
+    
+    
+	  if(file){
+	  			file >> this->fx ;
+          file >> this->fy ; 
+          file >> this->cx ;
+          file >> this->cy ; 
+          
+          for(int i=0;i<4;i++)
+            for(int j=0;j<4;j++){
+              file >> this->gMk(i,j);
+            }
+        
+          int nbBox;
+          file >> nbBox;
+          //std::cout << "NB BOX------>" << nbBox << std::endl ;
+          for(int i=0; i<nbBox ; i++)
+          {
+            
+           float minX, minY, minZ, maxX, maxY, maxZ;
+           file >> minX;
+           file >> maxX;
+           file >> minY;
+           file >> maxY;
+           file >> minZ;
+           file >> maxZ;
+            
+           Box tmp(minX, maxX, minY, maxY, minZ, maxZ);
+           forbiddenZone.push_back(tmp); 
+            
+          } 
+      		file.close();
+    	}
+    else 
+    {
+      std::cerr << "impossible d'ouvrir le fichier " << this->confFilename<<std::endl;
+      return 0;
+    }
+     return 1;  
+}
+  
+  
+  
   
 /*! 
  * \brief create a full path using the num of the image and the folder pathname
@@ -150,16 +255,21 @@ std::string RGBDSensor::path(std::string pathName, std::string filename, const i
  * \param filename, the pattern of the filename, should include a %d to include the right index
  * \param index, an interger corresponding to the sample number
 */
-std::string RGBDSensor::depthPath(std::string pathName, const int& index){
+std::string RGBDSensor::depthPath(const std::string & pathName, const int& index){
     return this->path(pathName,this->depthFilenamePattern, index);  
     }
     
-std::string RGBDSensor::rgbPath(std::string pathName, const int& index){
+std::string RGBDSensor::rgbPath(const std::string &pathName, const int& index){
     return this->path(pathName,this->rgbFilenamePattern, index);  
     }
     
-std::string RGBDSensor::timePath(std::string pathName){
+std::string RGBDSensor::timePath(const std::string & pathName){
     std::string tmp = pathName+"/"+this->timeFilename;
+    return tmp;   
+    }
+    
+std::string RGBDSensor::confPath(const std::string & pathName){
+    std::string tmp = pathName+"/"+this->confFilename;
     return tmp;   
     }
     
@@ -188,13 +298,14 @@ Plane RGBDSensor::ground(const Eigen::MatrixXf& pointCloud,  double confidence){
   Plane plane;
   
   // convert the current point cloud into a pcl point cloud
-  pcl::PointCloud<pcl::PointXYZ>::Ptr simpleCloud(new pcl::PointCloud<pcl::PointXYZ>);
-  Conversion::convert(pointCloud,simpleCloud);
-  plane = this->ground(simpleCloud,confidence);
+  //pcl::PointCloud<pcl::PointXYZ>::Ptr simpleCloud(new pcl::PointCloud<pcl::PointXYZ>);
+  //Conversion::convert(pointCloud,simpleCloud);
+  //plane = this->ground(simpleCloud,confidence);
   
   
   // OR Our method
-  //plane.findParameters(ptsIn,ptsOut,confidence);
+  plane.findParameters(ptsIn,ptsOut,confidence);
+  plane.print();
   
   
   return plane;
@@ -203,7 +314,7 @@ Plane RGBDSensor::ground(const Eigen::MatrixXf& pointCloud,  double confidence){
   
 /*!
  * 
- * \brief detect the ground plane    
+ * \brief detect the ground plane    er
  * \warning assume that most of the points are on the ground
  * 
  */   
@@ -256,7 +367,24 @@ int RGBDSensor::segment( const pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud,
 int RGBDSensor::filter (       const pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud,
                            pcl::PointCloud<pcl::PointXYZ>::Ptr& cloudFiltered, float lsize){
    
-   // Create the filtering object: downsample the dataset using a leaf size of 1cm
+      
+      // Create the filtering object
+     // pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
+     // sor.setInputCloud (cloud);
+     // sor.setMeanK (50);
+     // sor.setStddevMulThresh (1.0);
+     // sor.filter (*cloudFiltered);
+      
+       // Create the filtering object
+ //pcl::PassThrough<pcl::PointXYZ> pass;
+ // pass.setInputCloud (cloud);
+  //pass.setFilterFieldName ("z");
+  //pass.setFilterLimits (0.0, 1.0);
+  //pass.setFilterLimitsNegative (true);
+  //pass.filter (*cloudFiltered);
+      
+      
+      // Create the filtering object: downsample the dataset using a leaf size of 1cm
       pcl::VoxelGrid<pcl::PointXYZ> vg;
       vg.setInputCloud (cloud);
       vg.setLeafSize (lsize, lsize, lsize);
@@ -273,12 +401,22 @@ int RGBDSensor::filter (       const pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud
  * 
  */  
 
-int RGBDSensor::extrinsicCalibration(const Eigen::MatrixXf& pointCloud,double confidence,
+Plane RGBDSensor::extrinsicCalibration(const Eigen::MatrixXf& pointCloud,double confidence,
                  float lsize)
 {
       // create a PCL point cloud
       pcl::PointCloud<pcl::PointXYZ>::Ptr simpleCloud(new pcl::PointCloud<pcl::PointXYZ>);
       Conversion::convert(pointCloud,simpleCloud);
+      return this->extrinsicCalibration(simpleCloud,confidence,lsize);
+      //Plane plane = this->ground(pointCloud,  confidence);
+      // align the point cloud with the ground
+      //this->gMk = plane.computeTransformation(); 
+      //return 1;
+} 
+
+Plane RGBDSensor::extrinsicCalibration(const pcl::PointCloud<pcl::PointXYZ>::Ptr& simpleCloud,double confidence,
+                 float lsize)
+{
       
       //filtering the simple cloud every 1cm
       pcl::PointCloud<pcl::PointXYZ>::Ptr filteredCloud(new pcl::PointCloud<pcl::PointXYZ>);
@@ -286,17 +424,38 @@ int RGBDSensor::extrinsicCalibration(const Eigen::MatrixXf& pointCloud,double co
       
       // compute the plane on this filteredcloud
       Plane plane = this->ground(filteredCloud,  confidence);
-  
-      // select the inliers
-      Eigen::MatrixXf ptsIn(pointCloud), ptsOut(3,1) ;
-      plane.inlierSelection(ptsIn, ptsOut, confidence);
-      
+      //plane.print();
       // align the point cloud with the ground
       this->gMk = plane.computeTransformation(); 
        
-      return 1;
+      return plane;
 } 
 
+/*!
+ * Detect clusters 
+ * 
+ */
+int RGBDSensor::detectClusters(const Eigen::MatrixXf& pointCloud, 
+                               pcl::PointCloud<pcl::PointXYZ>::Ptr&  cloudFeetFiltered,
+                               std::vector<pcl::PointIndices>& clusterIndices,
+                               float clusterTolerance, 
+                               int minClusterSize,
+                               int maxClusterSize,
+                               float leafSize)
+{
+  // convert these point to a pcl point cloud
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloudFeet(new pcl::PointCloud<pcl::PointXYZ>);
+  Conversion::convert(pointCloud,cloudFeet);
+  
+  // filter the point of cloud to get regular grid of leafSize
+  this->filter(cloudFeet,cloudFeetFiltered, leafSize);
+
+  // segment the point filtered point cloud
+  this->segment(cloudFeetFiltered,clusterIndices,minClusterSize, maxClusterSize, clusterTolerance);
+  
+  return 1;
+} 
+ 
 /*!
  * Detect clusters over the ground in the ground plane
  * DEPRECATED TOO MUCH THINGS HIDDEN THERE
@@ -322,12 +481,12 @@ int RGBDSensor::detectClusters(const Eigen::MatrixXf& pointCloud,
       Plane plane = this->ground(filteredCloud, planeDistThreshold);
   
       // select the inliers
-      Eigen::MatrixXf ptsIn(pointCloud), ptsOut(3,1) ;
+      Eigen::MatrixXf ptsIn(pointCloud), ptsOut(1,3) ;
       plane.inlierSelection(ptsIn, ptsOut, planeDistThreshold);
       
       // align the point cloud with the ground
-      Eigen::Matrix4f gMk = plane.computeTransformation();
-      Eigen::MatrixXf gPtsOut = this->changeFrame(ptsOut,gMk);
+      this->gMk = plane.computeTransformation();
+      Eigen::MatrixXf gPtsOut = this->changeFrame(ptsOut);
      
       // keep only the point that are not on ground
       pcl::PointCloud<pcl::PointXYZ>::Ptr cloudFeet(new pcl::PointCloud<pcl::PointXYZ>);
@@ -381,13 +540,73 @@ Eigen::MatrixXf RGBDSensor::changeFrame(const Eigen::MatrixXf & oP,const Eigen::
  * 
  */ 
  
-int RGBDSensor::removeGroundPoints(Eigen::MatrixXf ptsIn,Eigen::MatrixXf ptsOut,double distThreshold)   
+int RGBDSensor::clearGroundPoints(Eigen::MatrixXf & ptsIn,Eigen::MatrixXf & ptsOut,double distThreshold, Plane * gplane)   
 {
   // select the points that are not on the ground
-  Plane gplane(0,0,1,0);
-  gplane.inlierSelection(ptsIn, ptsOut, distThreshold);  
+  //Plane gplane(0,0,1,0);
+  gplane->print();
+  gplane->inlierSelection(ptsIn, ptsOut, distThreshold);  
   return 1;    
 }
 
+
+/*!
+ *
+ * \brief Use a depthmap to find the clusters of points that are due to the wheels and
+ * artifacts
+ * 
+ *  \warning the point cloud should be taken without the foot of the person.
+ *  \warning the point coordinates should be expressed in the Ground frame
+ * 
+ */ 
+int RGBDSensor::initForbiddenBoxes(const Eigen::MatrixXf & pts, 
+                               float clusterTolerance, 
+                               int minClusterSize,
+                               int maxClusterSize,
+                               float leafSize)
+{
+  // 1. convert the point cloud to a PCL point cloud, 
+  // 2. filter 
+  // 3. segment it  
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloudFeetFiltered (new pcl::PointCloud<pcl::PointXYZ>);
+  std::vector<pcl::PointIndices> clusterIndices;
+  
+  this->detectClusters(pts, cloudFeetFiltered,clusterIndices, clusterTolerance, minClusterSize,maxClusterSize,leafSize);
+ 
+ 
+  int j=0;
+  // Creating the Clusters
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr colorCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+  for (std::vector<pcl::PointIndices>::const_iterator it = clusterIndices.begin (); it != clusterIndices.end (); ++it)
+      {
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloudCluster (new pcl::PointCloud<pcl::PointXYZ>);
+        for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); pit++)
+         cloudCluster->points.push_back (cloudFeetFiltered->points[*pit]); 
+         cloudCluster->width = cloudCluster->points.size ();
+         cloudCluster->height = 1;
+         cloudCluster->is_dense = true;
+        
+        // create a Matrix cluster
+         Eigen::MatrixXf ptsCluster;
+         Conversion::convert(cloudCluster, ptsCluster);                    
+         
+         Box box;
+         box.findParameters(ptsCluster);
+         this->forbiddenZone.push_back(box); 
+
+         std::cout << "Point cloud in the forbidden area: " << cloudCluster->points.size () << " data points." << std::endl;
+         j++;
+      }
+    std::cout << "There are " << j << " fdorbidden areas " << endl;
+  return 1;
+  }
+  
+     /*! remove the points that are in the forbidden area */ 
+    int RGBDSensor::clearForbiddenZone( Eigen::MatrixXf & ptsIn, Eigen::MatrixXf & ptsOut, double distThreshold ){
+      
+       return Box::inlierSelection( this->forbiddenZone,ptsIn,ptsOut,distThreshold);
+   }
+  
+  
   
 }

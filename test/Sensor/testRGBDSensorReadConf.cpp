@@ -144,8 +144,11 @@ main (int argc, char** argv)
 
   //-------------------------------------------------------------//
         
-  double fx(525.0), fy(525.0), cx(319.05), cy(239.5);
-  Kinect * kinect= new Kinect(fx,fy,cx,cy);  
+//  double fx(525.0), fy(525.0), cx(319.05), cy(239.5);
+  Kinect * kinect= new Kinect();  
+  kinect->loadConfFile(path);
+  //kinect->print();  
+    
       
   // create the point cloud as an eigen matrix
   Eigen::MatrixXf pointCloud = kinect->pointCloud(path,nbIm);
@@ -165,14 +168,15 @@ main (int argc, char** argv)
   std :: cout << ptsFeetNWheels.rows() << std::endl;
   std :: cout << gPtsFeetNWheels.rows() << std::endl;
   
-  leafSize=0.01;
-  kinect->initForbiddenBoxes(gPtsFeetNWheels,clusterTolerance, minClusterSize, maxClusterSize,leafSize);
-
-  for(int i=0 ; i< kinect->forbiddenZone.size() ; i++)
-  {
-      std::cout << "----- "<< i << " ----- " << endl; 
-      kinect->forbiddenZone[i].print();  
-  }
+  //leafSize=0.01;
+  //kinect->initForbiddenBoxes(gPtsFeetNWheels,clusterTolerance, minClusterSize, maxClusterSize,leafSize);
+  //kinect->writeConfFile(path);
+  
+  //for(int i=0 ; i< kinect->forbiddenZone.size() ; i++)
+  //{
+  //    std::cout << "----- "<< i << " ----- " << endl; 
+  //    kinect->forbiddenZone[i].print();  
+  //}
   
       
       Eigen::MatrixXf gPtsWheels(gPtsFeetNWheels), gPtsFeet(1,3); 
@@ -181,8 +185,8 @@ main (int argc, char** argv)
       // viewer
 
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr colorCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-      Conversion::convert(gPtsWheels,colorCloud, 0, 0,255);
-      Conversion::convert(gPointCloud,colorCloud, 255, 0,0);
+    //  Conversion::convert(gPtsWheels,colorCloud, 0, 0,255);
+     // Conversion::convert(gPointCloud,colorCloud, 255, 0,0);
       Conversion::convert(gPtsFeet,colorCloud, 0, 255,0);
 
       boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;

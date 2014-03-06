@@ -5,19 +5,10 @@
 #--------------------------------------------
 
 SET (SOURCE
-testVispKinect.cpp
-testOpenNi.cpp
-testFreenect.cpp
-testKinectDisplay.cpp
-testKinect.cpp
-testKinectAcquire.cpp
-testKinectRead.cpp
-testKinectConvertToEigenMatrix.cpp
-testKinectDetectGround.cpp
-testKinectConvert.cpp
-testKinectBoxSelectionMultiImage.cpp # set box and use it to split the ptcloud
-testKinectCalibrationMultiImage.cpp #detect a plane and use it to split the ptcloud
-testKinectCalibrationMultiImage-v2.cpp #using directly the param of kinect 
+kinectInitConfig.cpp
+kinectVisualizeFeet.cpp
+kinectDisplay.cpp
+kinectAcquire.cpp
 )
 
 # rule for binary build
@@ -35,4 +26,3 @@ FOREACH(source ${SOURCE})
 
 ENDFOREACH(source)
 
-#add_subdirectory(test)

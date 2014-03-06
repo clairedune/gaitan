@@ -1,8 +1,8 @@
 
 #include <libgaitan/box.h>
-#include<Eigen/Dense>
-#include<iostream>
-
+#include <Eigen/Dense>
+#include <iostream>
+#include <vector>
 #include <pcl/common/common_headers.h>
 
    
@@ -75,13 +75,89 @@ namespace gaitan
 		 std::cout <<"The box parameters are:\n" << this->parameters << std::endl;
 		 }
 		 
+     
+ /*!
+  * 
+  * \brief test if a point P(x, y,z) is in the box
+  * \return true if the point is in the box, else returns false  
+  */    
+ bool Box::isInBox(float x, float y, float z, float distThreshold){
+   
+ if(     (x > this->parameters(0) - distThreshold) && (x < this->parameters(1) + distThreshold)
+          && (y > this->parameters(2) - distThreshold) && (y < this->parameters(3) + distThreshold)
+          && (z > this->parameters(4) - distThreshold) && (z < this->parameters(5) + distThreshold)){
+         return true;
+        }
+      else{
+          return false;
+        }  
+ }    
+     
+     
    /*! 
     * \brief Select the point that are in the Box
     * Divide the set of point into two parts : the inliers and the outliers
     * the ptsIn matrix contains all the points. 
     * the ptsOut matrix contains no point at the beginning
     */
+int Box::inlierSelection( std::vector<Box>& boxes,
+                          Eigen::MatrixXf & ptsIn, 
+                          Eigen::MatrixXf & ptsOut, 
+                           double & distThreshold){
    
+    // store the current data in a temp matrix
+    Eigen::MatrixXf pts(ptsIn);
+    
+        
+    // resize the input matrixes in and out  
+    int max(pts.rows()); // nb points
+    ptsIn.resize(max,3); // the matrix will be smaller that max 
+    ptsOut.resize(max,3); // the matrix will be smaller that max 
+
+    
+    // select the point in and out
+    int indexIn(0), indexOut(0);
+    bool isInside;
+    
+    for(int i=0; i<max; i++){
+      
+      isInside = false;
+      float x = pts(i,0);
+      float y = pts(i,1);
+      float z = pts(i,2);
+    
+      for (std::vector<Box>::iterator it = boxes.begin() ; it != boxes.end(); ++it)
+      {
+        if((*it).isInBox(x,y,z,distThreshold)) isInside=true;
+      }
+      
+      if( isInside   ){
+          ptsIn(indexIn,0) = x;
+          ptsIn(indexIn,1) = y;
+          ptsIn(indexIn,2) = z; 
+          indexIn++;
+        }
+      else{
+          ptsOut(indexOut,0) = x;
+          ptsOut(indexOut,1) = y;
+          ptsOut(indexOut,2) = z; 
+          indexOut++;
+        }
+      }
+            
+    ptsIn.conservativeResize(indexIn,3); // the matrix will be smaller that max 
+    ptsOut.conservativeResize(indexOut,3); // the matrix will be smaller that max 
+    
+        
+        return 1;
+
+}
+   /*! 
+    * \brief Select the point that are in the Box
+    * Divide the set of point into two parts : the inliers and the outliers
+    * the ptsIn matrix contains all the points. 
+    * the ptsOut matrix contains no point at the beginning
+    */
 int Box::inlierSelection( Eigen::MatrixXf & ptsIn, 
                           Eigen::MatrixXf & ptsOut, 
                            double & distThreshold){
@@ -103,15 +179,11 @@ int Box::inlierSelection( Eigen::MatrixXf & ptsIn,
       float x = pts(i,0);
       float y = pts(i,1);
       float z = pts(i,2);
-      
-      
-      
+    
       // if x > minX - distThreshold && x < maxX + distThreshold 
       // AND if y > minY - distThreshold && y < maxY + distThreshold 
       // AND if z > minZ - distThreshold && z < maxZ + distThreshold 
-      if(    (x > this->parameters(0) - distThreshold) && (x < this->parameters(1) + distThreshold)
-          && (y > this->parameters(2) - distThreshold) && (y < this->parameters(3) + distThreshold)
-          && (z > this->parameters(4) - distThreshold) && (z < this->parameters(5) + distThreshold)){
+      if( this->isInBox(x,y,z,distThreshold)   ){
           ptsIn(indexIn,0) = x;
           ptsIn(indexIn,1) = y;
           ptsIn(indexIn,2) = z; 
@@ -124,12 +196,10 @@ int Box::inlierSelection( Eigen::MatrixXf & ptsIn,
           indexOut++;
         }
       }
-    std::cout << " test2" << std::endl;
             
     ptsIn.conservativeResize(indexIn,3); // the matrix will be smaller that max 
     ptsOut.conservativeResize(indexOut,3); // the matrix will be smaller that max 
     
-        std::cout << " test3" << std::endl;
         
         return 1;
 
