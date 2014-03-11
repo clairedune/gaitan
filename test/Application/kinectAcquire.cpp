@@ -75,7 +75,6 @@ int main(int argc, char ** argv) {
 	  			    file << index << "\t";
               file << std::setprecision(precision) <<kinectTime << "\n";	 
               file.flush();
-              //std::cout << "------- TIME ----- " << std::setprecision(precision)<<kinectTime << std::endl;
 			      }
  
         

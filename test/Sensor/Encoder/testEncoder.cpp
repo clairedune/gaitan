@@ -45,10 +45,10 @@ int main(int argc, char **argv) {
   string outfileRight = path+"/encoderR.dat";
   string outfileSync = path+"/encoderS.dat";  
 
-  encoder->writeInFile(outfile,17);
-  encoder->writeInFileLeft(outfileLeft);
-  encoder->writeInFileRight(outfileRight); 
-  encoder->writeInFileSynchro(outfileSync);
+  encoder->save(outfile,17);
+  encoder->saveLeft(outfileLeft);
+  encoder->saveRight(outfileRight); 
+  encoder->saveSynchro(outfileSync);
 
   //delete encoder;
   return 1;

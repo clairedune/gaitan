@@ -48,7 +48,8 @@ namespace gaitan
      
     public :
      // invalid zone made of boxes
-     std::vector<Box> forbiddenZone; 
+     std::vector<Box> forbiddenZone;
+     Box fov ; // authorized field of view 
     
     
     public:	
@@ -57,12 +58,21 @@ namespace gaitan
      RGBDSensor();
      RGBDSensor(double fx, double fy, double cx, double cy) ;
      virtual ~RGBDSensor();
-    
+     
+     
+     // accessors
+     inline double getFx(){return this->fx;}
+     inline double getFy(){return this->fy;}
+     inline double getCx(){return this->cx;}
+     inline double getCy(){return this->cy;}
+      
+     // modifiers
+     inline void setFov(const  Box & fieldOfView){this->fov=fieldOfView;}
     
      // sensor class methods
      void init();
      void print();
-     
+     void print(const int & beg, const int & end);
      //config
      int saveConfFile(const std::string &pathName);
      
@@ -70,7 +80,10 @@ namespace gaitan
      int loadConfFile(const std::string &pathName);
      
      //time
-     int loadTimeLine(const std::string &pathName);
+     int loadTimeSampling(const std::string &pathName);
+     inline float timestamp(const int & iter){return this->data->data(iter,1);}
+     
+     
      
      // rgbd sensor method
      void setRgbFilenamePattern(const std::string &s){this->rgbFilenamePattern=s;}
@@ -113,12 +126,16 @@ namespace gaitan
     Plane ground(const Eigen::MatrixXf& pointCloud,  double confidence=0.02);
     Plane ground(const pcl::PointCloud<pcl::PointXYZ>::Ptr& simpleCloud,  double confidence=0.02);
     
-    Eigen::Matrix4f computePose(const Eigen::MatrixXf& pointCloud, double confidence=0.02);
+    Eigen::Matrix4f computePose(const Eigen::MatrixXf& pointCloud, double confidence=0.02); // deprecated
+    int computePose(const Eigen::MatrixXf& pointCloud, Eigen::MatrixXf & output, double confidence=0.02);
         
+        
+    /*!segment the point cloud into sub point cloud*/    
     int segment( const pcl::PointCloud<pcl::PointXYZ>::Ptr & cloudFilterd,
                  std::vector<pcl::PointIndices>& clusterIndices,
                  int minClusterSize, int maxClusterSize, double tol);
-    
+  
+    /*! segment the point cloud into sub point cloud (do a filtering first)*/
     int segment( const pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud,
                  pcl::PointCloud<pcl::PointXYZ>::Ptr& cloudFiltered,
                  std::vector<pcl::PointIndices>& clusterIndices,
@@ -127,11 +144,18 @@ namespace gaitan
                  double tol, 
                  float lsize=0.01);
     
+    /*! filter the point cloud*/
     int filter (       const pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud,
                        pcl::PointCloud<pcl::PointXYZ>::Ptr& cloudFiltered, float lsize=0.01);
                        
-    Eigen::MatrixXf changeFrame(const Eigen::MatrixXf & kP,const Eigen::Matrix4f & wMk);
-    Eigen::MatrixXf changeFrame(const Eigen::MatrixXf & kP);
+    
+    /*! Change the frame where the points are expressed*/                   
+    Eigen::MatrixXf changeFrame(const Eigen::MatrixXf & kP,const Eigen::Matrix4f & wMk); // deprecated
+    /*! use this function better*/
+    void changeFrame(const Eigen::MatrixXf & kP, Eigen::MatrixXf & outM,const Eigen::Matrix4f & wMk);
+    /*! Change the frame where the points are expressed*/                   
+    Eigen::MatrixXf changeFrame(const Eigen::MatrixXf & kP);// deprecated
+    void changeFrame(const Eigen::MatrixXf & kP,Eigen::MatrixXf & outM);
                    
 
     int detectClusters(const Eigen::MatrixXf& pointCloud, 
@@ -158,6 +182,9 @@ namespace gaitan
     /*! remove the points that are in the forbidden area */ 
     int clearForbiddenZone( Eigen::MatrixXf & ptsIn, Eigen::MatrixXf & ptsOut, double distThreshold ); 
 
+    /*! remove the points that are out of the field of view */
+    int limitFov(Eigen::MatrixXf & ptsIn, Eigen::MatrixXf & ptsOut, double & distThreshold);
+
     /*! init the list of boxes where the points have to be removed Valid only in ground frame*/
     int initForbiddenBoxes(const Eigen::MatrixXf & pts,
                           float clusterTolerance=0.04, 
@@ -165,7 +192,11 @@ namespace gaitan
                           int maxClusterSize=10000,
                           float leafSize=0.01);
     
-    
+    int clusterBoundingBoxes(const Eigen::MatrixXf & pts, 
+                             const pcl::PointCloud<pcl::PointXYZ>::Ptr &cloudFeetFiltered,
+                             const std::vector<pcl::PointIndices> &clusterIndices,
+                             std::vector<Box> &boxes
+                             );
     
     // to be implemented in daughter class
     virtual int display() = 0 ;

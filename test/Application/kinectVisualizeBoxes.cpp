@@ -39,9 +39,9 @@
 
 using namespace gaitan;
 
-void userInput (int argc, char** argv, std::string& path, std::string &pattern, int & nbImBegin, int & nbImEnd)
+void userInput (int argc, char** argv, std::string& path, std::string &pattern, int & nbImBegin, int & nbImEnd, bool & verbose)
 {
-  
+  verbose = true;
   pattern = "depth_%07d.pfm";
  
   // get the path name
@@ -62,6 +62,10 @@ void userInput (int argc, char** argv, std::string& path, std::string &pattern, 
     nbImEnd = atoi(argv[3]);
     }
   else  nbImEnd = nbImBegin;  
+  
+  if(argc>4){
+    verbose = false;
+    }
   
   
 }
@@ -125,7 +129,8 @@ main (int argc, char** argv)
  //------------- INIT -----------------------------------------//
   std::string path, pattern, fullPath;
   int nbIm, nbImBegin, nbImEnd;
-  userInput(argc, argv, path, pattern, nbImBegin, nbImEnd);
+  bool verbose;
+  userInput(argc, argv, path, pattern, nbImBegin, nbImEnd, verbose);
      
    
   // ------------ SET UP ------------------------------------//
@@ -133,12 +138,15 @@ main (int argc, char** argv)
   // segmentation parameters
   // TODO : make a conf file
   float clusterTolerance (0.04); // min dist between two cluster
-  int minClusterSize(150);       // min size of a cluster
+  int minClusterSize(200);       // min size of a cluster
   int maxClusterSize(50000);     // max size of a cluster
   double confidence(0.02);       // confidence for plane detection
   float leafSize(0.005);          // size of the grid a filtered point cloud
   double distThreshold(0.02);    // min point-to-plane distance when removing points belonging to ground plane
+  Box feetZone(-0.8,0,-0.4, 0.4, 0, 0.6);
 
+  
+   
   //-------------------------------------------------------------//
         
 //  double fx(525.0), fy(525.0), cx(319.05), cy(239.5);
@@ -165,29 +173,37 @@ main (int argc, char** argv)
   bool isFirst = true;
   int iteration  =0;
 
+
+
   for(int nbIm=nbImBegin;nbIm<=nbImEnd ; nbIm++){ 
  
-    
+   if(verbose){ 
     // prompt message
     std::cout << "----------------------" << std::endl ;
     std::cout << "  Iteration " << iteration << std::endl ;
     std::cout << "  Image " << nbIm << std::endl ;
     std::cout  << " Time " <<std::setprecision(15)<<kinect->data->data(nbIm,1)<< std::endl; 
     std::cout << "----------------------" << std::endl ;
+  }
+    
     iteration++;
          
     // create the point cloud as an eigen matrix
    
     Eigen::MatrixXf pt;
     kinect->pointCloud(path,nbIm,pt);
-    Eigen::MatrixXf copy (pt);
+    if(pt.rows()<1) 
+    {
+      std :: cerr << "There is no point in the point cloud"<< std::endl; 
+      return -2;
+    }   
     
+    
+    if (verbose){
     std::cout << pt.rows() << "\t Total points" << std::endl;
-    Eigen::MatrixXf ptsOut; 
-    kinect->limitFov(pt, ptsOut,distThreshold);
     std::cout << pt.rows() << "\t Total points in field of view" << std::endl;
-    
-    if(pt.rows()<1) return -2;
+  }
+
       
     // init the kinect pose wrt the ground only for the first image
     if(isFirst)
@@ -198,19 +214,53 @@ main (int argc, char** argv)
     Eigen::MatrixXf ptsGround(pt),ptsFeetNWheels(1,3) ;
     kinect->clearGroundPoints(ptsGround,ptsFeetNWheels,distThreshold,&ground);  
     
+    
     // change the points frame
     Eigen::MatrixXf gPtsFeetNWheels  = kinect->changeFrame(ptsFeetNWheels);     
+    
+    
+    //bounding box for the feet and wheels
+    Box bbFeetNWheels;
+    bbFeetNWheels.findParameters(gPtsFeetNWheels);
+    
+    //limit the fov
+    Eigen::MatrixXf ptsOut; 
+    kinect->setFov(feetZone);
+    kinect->limitFov(gPtsFeetNWheels,ptsOut,distThreshold);
   
-    // Clear forbidden zone
-//    kinect->limitFov(gPtsFeetNWheels, ptsOut,distThreshold);   
+    // Clear forbidden zone corresponding to the wheels
     Eigen::MatrixXf gPtsWheels(gPtsFeetNWheels), gPtsFeet(1,3); 
     kinect->clearForbiddenZone(gPtsWheels, gPtsFeet, distThreshold);
+     
+    // bounding box for the feet 
+    Box bbFeet;
+    bbFeet.findParameters(gPtsFeetNWheels);
+    if (verbose ) bbFeet.print();         
              
+             
+    //------------------------------------------------------------//
+    //
+    //  Detect the feet cluster and trace bounding boxes
+    //
+    //------------------------------------------------------------//     
+    std::vector<Box> feetBoundingBoxes;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloudFeetFiltered (new pcl::PointCloud<pcl::PointXYZ>);
+    std::vector<pcl::PointIndices> clusterIndices;
+    kinect->detectClusters(gPtsFeet, cloudFeetFiltered,clusterIndices, clusterTolerance, minClusterSize,maxClusterSize,leafSize);
+    kinect->clusterBoundingBoxes(gPtsFeet, cloudFeetFiltered,clusterIndices,feetBoundingBoxes);
+             
+             
+             
+    //------------------------------------------------------------//
+    //
+    //  Display the point cloud and the bounding boxes
+    //
+    //------------------------------------------------------------//         
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr colorCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     Conversion::convert(gPtsFeet,colorCloud, 0, 255,0);
-    Conversion::convert(gPtsWheels,colorCloud, 255, 0,0);
-    std::cout << colorCloud->points.size() << "\t pcl colour point cloud" << std::endl;     
     
+    if (verbose)
+       std::cout << colorCloud->points.size() << "\t pcl colour point cloud" << std::endl;     
     // viewer remove all points, ok even if there is no point inside
     viewer->removeAllPointClouds();
     viewer->removeAllShapes();
@@ -219,6 +269,11 @@ main (int argc, char** argv)
     pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(colorCloud);
     viewer->addPointCloud<pcl::PointXYZRGB> (colorCloud, rgb,"sample cloud");
     viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "sample cloud"); 
+  
+    // bounding boxes
+   // cubeVis(viewer, bbFeetNWheels, 1.0, 1.0,1.0,"feet and wheels");
+    cubeVis(viewer, bbFeet, 0.5, 1.0,0.5,"feet");
+    cubeVis(viewer, feetZone, 1.0, 0.5,0.5,"fov");
   
   
     // display the boxes corresponding to the forbidden zone
@@ -229,13 +284,34 @@ main (int argc, char** argv)
        std::string cubeName(buf);      
        cubeVis(viewer, kinect->forbiddenZone[i], 1.0, 0.0,0.0,cubeName);
     }
+    // display the boxes corresponding to the feet
+    float x, y, z;
+    
+    for (int i =0; i<feetBoundingBoxes.size();i++) {
+       feetBoundingBoxes[i].center (x,y,z);
+
+        if (verbose){
+       std::cout << " Box "<< i << " :" << std::endl;
+       feetBoundingBoxes[i].print();
+       std::cout << "x : "<< x << "\t" ;
+       std::cout << "y : "<< y << "\t" ;
+       std::cout << "z : "<< z << "\t" << std::endl;
+       std::cout << "volume : " << feetBoundingBoxes[i].volume() << std::endl;
+       }
+     
+       std::string tmp = "foot-%d";
+       char buf[100];
+       sprintf(buf,tmp.c_str(),i);
+       std::string footName(buf);      
+       cubeVis(viewer, feetBoundingBoxes[i], 0.0, 1.0,0.0,footName);
+    }
     
     int elapse(0);  
     //while (!viewer->wasStopped ())
     while (elapse<3)
       {
          viewer->spinOnce (100);
-        boost::this_thread::sleep (boost::posix_time::microseconds (100000));
+        boost::this_thread::sleep (boost::posix_time::microseconds (10000));
         elapse++;
       }
    }

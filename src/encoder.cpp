@@ -36,11 +36,11 @@ Encoder::Encoder()
 {
 
 
-   this->_data        = new Table(4,10);
-   this->_dataRaw     = new Table(7,10);  
-   this->_dataLeft    = new Table(5,10);
-   this->_dataRight   = new Table(5,10); 
-   this->_dataSynchro = new Table(9,10);    
+   this->data        = new Table(4,10);
+   this->dataRaw     = new Table(7,10);  
+   this->dataLeft    = new Table(5,10);
+   this->dataRight   = new Table(5,10); 
+   this->dataSynchro = new Table(9,10);    
 
    this->initData();
 }
@@ -50,11 +50,11 @@ Encoder::Encoder(string filename)
 {
 
 
-   this->_data        = new Table(4,10);
-   this->_dataRaw     = new Table(7,10);  
-   this->_dataLeft    = new Table(5,10);
-   this->_dataRight   = new Table(5,10); 
-   this->_dataSynchro = new Table(9,10);  
+   this->data        = new Table(4,10);
+   this->dataRaw     = new Table(7,10);  
+   this->dataLeft    = new Table(5,10);
+   this->dataRight   = new Table(5,10); 
+   this->dataSynchro = new Table(9,10);  
 
    this->initData();
   
@@ -64,11 +64,11 @@ Encoder::Encoder(string filename)
 
 void Encoder::initData()
 {
-   this->_data->init(); 
-   this->_dataRaw->init(); 
-   this->_dataLeft->init();
-   this->_dataRight->init();
-   this->_dataSynchro->init();
+   this->data->init(); 
+   this->dataRaw->init(); 
+   this->dataLeft->init();
+   this->dataRight->init();
+   this->dataSynchro->init();
   
 }
 
@@ -84,62 +84,62 @@ int Encoder::acquire(const std::string &path , bool flagDisp)
 
 void Encoder::print(int deb, int end){
  cout <<endl<< "----RAW----" << endl;
-  this->_dataRaw->print(deb, end);
+  this->dataRaw->print(deb, end);
   
   cout <<endl<<"----- LEFT -----" <<endl;
-  this->_dataLeft->print(deb, end);
+  this->dataLeft->print(deb, end);
   
   cout <<endl<<"----- RIGHT -----" <<endl;
-  this->_dataRight->print(deb, end);
+  this->dataRight->print(deb, end);
 
   cout <<endl<<"----- SYNCHRO -----" <<endl;
-  this->_dataSynchro->print(deb, end);
+  this->dataSynchro->print(deb, end);
 
   cout <<endl<<"----- ODOMETRY -----" <<endl;
-  this->_data->print(deb, end);
+  this->data->print(deb, end);
 }
 
 void Encoder::print(){
   cout <<endl<<"----- ODOMETRY -----" <<endl;
-  this->_data->print();
+  this->data->print();
 }
 
 
 
 Encoder::~Encoder(){
- delete this->_dataRight;
- delete this->_dataLeft;
- delete this->_dataSynchro;
- delete this->_dataRaw; 
- //delete this->_data; 
+ delete this->dataRight;
+ delete this->dataLeft;
+ delete this->dataSynchro;
+ delete this->dataRaw; 
+ //delete this->data; 
 }
 
 
 
 int Encoder::readFile(string filename)
 {
-  this->_dataRaw->createFromFile(filename);
+  this->dataRaw->load(filename);
   this->splitData();
   this->synchronizeData();
   return 0;
 }
 
-int Encoder::writeInFileLeft(string filename)
+int Encoder::saveLeft(string filename)
 {
-  return this->_dataLeft->writeInFile(filename,17);
+  return this->dataLeft->save(filename,17);
  
 }
 
-int Encoder::writeInFileRight(string filename)
+int Encoder::saveRight(string filename)
 {
-  return this->_dataRight->writeInFile(filename,17);
+  return this->dataRight->save(filename,17);
  
 }
 
 
-int Encoder::writeInFileSynchro(string filename)
+int Encoder::saveSynchro(string filename)
 {
-  return this->_dataSynchro->writeInFile(filename,17);
+  return this->dataSynchro->save(filename,17);
 }
 
 
@@ -147,7 +147,7 @@ int Encoder::writeInFileSynchro(string filename)
  * 
  * Split right and left data from data read in a file
  * 
- * Warning : suppose that _data has been filled
+ * Warning : suppose that data has been filled
  * #1:absTime #2:relPulse #3:relDist #4:absPulse #5:absDist
  *
  */
@@ -156,8 +156,8 @@ void Encoder:: splitData()
 
  cout << "Entrer dans la fonction split data"<< endl;
  
- this->_dataLeft->resize(5,this->_dataRaw->_nbRow);
- this->_dataRight->resize(5,this->_dataRaw->_nbRow);
+ this->dataLeft->resize(5,this->dataRaw->rows());
+ this->dataRight->resize(5,this->dataRaw->rows());
  
  cout << "Les deux vecteurs sont crées"<< endl;
  
@@ -166,47 +166,47 @@ void Encoder:: splitData()
  int indexLeft(0), indexRight(0); 
 
  // run on all the file lines
- for(int i=0;i<this->_dataRaw->_nbRow;i++)
+ for(int i=0;i<this->dataRaw->rows();i++)
   { 
     // encoder pulse value since the beginning of the experiment
-    double absPulse ( this->_dataRaw->_data[i][1] );
+    double absPulse ( this->dataRaw->data(i,1) );
     double absAngle ( absPulse/4*M_PI/180 );
     double absDist  ( absAngle/4*wheelSize );    
 
     // encoder relative value since the last sample
-    double relPulse ( this->_dataRaw->_data[i][2] );
+    double relPulse ( this->dataRaw->data(i,2) );
     double relAngle ( relPulse/4*M_PI/180 );
     double relDist  ( relAngle/4*0.1 );
   
     // time
-    double absTime  ( this->_dataRaw->_data[i][6] ) ;
+    double absTime  ( this->dataRaw->data(i,6) ) ;
     
     // encoder number
-    int num(this->_dataRaw->_data[i][0]);   
+    int num(this->dataRaw->data(i,0));   
 
     // if the encoder is 0, then store data in left matrice else right
      if (num==0)
      { 
-       this->_dataLeft->_data[indexLeft][0] = absTime;
-       this->_dataLeft->_data[indexLeft][1] = relPulse;
-       this->_dataLeft->_data[indexLeft][2] = relDist;
-       this->_dataLeft->_data[indexLeft][3] = absPulse;
-       this->_dataLeft->_data[indexLeft][4] = absDist;
+       this->dataLeft->data(indexLeft,0) = absTime;
+       this->dataLeft->data(indexLeft,1) = relPulse;
+       this->dataLeft->data(indexLeft,2) = relDist;
+       this->dataLeft->data(indexLeft,3) = absPulse;
+       this->dataLeft->data(indexLeft,4) = absDist;
        indexLeft++;
 	
     }
     else
     {
-       this->_dataRight->_data[indexRight][0] = absTime;
-       this->_dataRight->_data[indexRight][1] = -relPulse;
-       this->_dataRight->_data[indexRight][2] = -relDist;
-       this->_dataRight->_data[indexRight][3] = -absPulse;
-       this->_dataRight->_data[indexRight][4] = -absDist;
+       this->dataRight->data(indexRight,0) = absTime;
+       this->dataRight->data(indexRight,1) = -relPulse;
+       this->dataRight->data(indexRight,2) = -relDist;
+       this->dataRight->data(indexRight,3) = -absPulse;
+       this->dataRight->data(indexRight,4) = -absDist;
        indexRight++;
     }
    
-   this->_dataLeft->_nbRow = indexLeft-1;
-   this->_dataRight->_nbRow = indexRight-1;
+   this->dataLeft->rows(indexLeft-1);
+   this->dataRight->rows(indexRight-1);
 
   }
    
@@ -215,8 +215,8 @@ void Encoder:: splitData()
 
 /*
 * Build a folder with left and right data synchronised
-* Input  _dataSynchro->_data : #0:absTime #1:relPulse  #2:relDist  #3:absPulse  #4:absDist
-* Output _dataSynchro->_data : ZERO-BLOC
+* Input  dataSynchro->data : #0:absTime #1:relPulse  #2:relDist  #3:absPulse  #4:absDist
+* Output dataSynchro->data : ZERO-BLOC
 * #0:absTime 
 * #1:relPulseL 
 * #2:relDistL
@@ -230,139 +230,138 @@ void Encoder:: splitData()
 int Encoder::synchronizeData()
 { 
   int nbCol(9);
-  int nbRow(this->_dataRaw->_nbRow); 
-  this->_dataSynchro->resize(nbCol, nbRow);
+  int nbRow(this->dataRaw->rows()); 
+  this->dataSynchro->resize(nbCol, nbRow);
 
   int iterLeft(0);
   int iterRight(0);
   int iter(0);
 
-  double timeLeft  = this->_dataLeft->_data[iterLeft][0];
-  double timeRight = this->_dataRight->_data[iterRight][0];
+  double timeLeft  = this->dataLeft->data(iterLeft,0);
+  double timeRight = this->dataRight->data(iterRight,0);
 
   bool finished(false);
   while(!finished)
   {  
-     /*cout << iter <<" : "<< _data->_nbRow << " | "
-          << iter <<" : "<< _dataSynchro->_nbRow << " | "
-          << iterLeft <<" : "<< _dataLeft->_nbRow<< " | "
-          << iterRight <<" : "<< _dataRight->_nbRow<<  endl;*/
-        // if the two iterators are smaller than _dataSynchro->_data size
-	if( iterLeft<this->_dataLeft->_nbRow && iterRight<this->_dataRight->_nbRow)
+     /*cout << iter <<" : "<< data->rows() << " | "
+          << iter <<" : "<< dataSynchro->rows() << " | "
+          << iterLeft <<" : "<< dataLeft->rows()<< " | "
+          << iterRight <<" : "<< dataRight->rows()<<  endl;*/
+        // if the two iterators are smaller than dataSynchro->data size
+	if( iterLeft<this->dataLeft->rows() && iterRight<this->dataRight->rows())
 	{
 		//if the two times are the same
 		if(timeLeft==timeRight)
 		{   
 
-			this->_dataSynchro->_data[iter][0] = timeLeft;
+			this->dataSynchro->data(iter,0) = timeLeft;
 
-			this->_dataSynchro->_data[iter][1] = this->_dataLeft->_data[iterLeft][1];
-			this->_dataSynchro->_data[iter][2] = this->_dataLeft->_data[iterLeft][2];
-			this->_dataSynchro->_data[iter][3] = this->_dataLeft->_data[iterLeft][3];
-			this->_dataSynchro->_data[iter][4] = this->_dataLeft->_data[iterLeft][4];
+			this->dataSynchro->data(iter,1) = this->dataLeft->data(iterLeft,1);
+			this->dataSynchro->data(iter,2) = this->dataLeft->data(iterLeft,2);
+			this->dataSynchro->data(iter,3) = this->dataLeft->data(iterLeft,3);
+			this->dataSynchro->data(iter,4) = this->dataLeft->data(iterLeft,4);
 
 
-			this->_dataSynchro->_data[iter][5] = this->_dataRight->_data[iterRight][1];
-			this->_dataSynchro->_data[iter][6] = this->_dataRight->_data[iterRight][2];
-			this->_dataSynchro->_data[iter][7] = this->_dataRight->_data[iterRight][3];
-			this->_dataSynchro->_data[iter][8] = this->_dataRight->_data[iterRight][4];
+			this->dataSynchro->data(iter,5) = this->dataRight->data(iterRight,1);
+			this->dataSynchro->data(iter,6) = this->dataRight->data(iterRight,2);
+			this->dataSynchro->data(iter,7) = this->dataRight->data(iterRight,3);
+			this->dataSynchro->data(iter,8) = this->dataRight->data(iterRight,4);
 
 
 			iterLeft++;
 			iterRight++;
-  			timeLeft       = this->_dataLeft->_data[iterLeft][0];
-  			timeRight      = this->_dataRight->_data[iterRight][0];
+  			timeLeft       = this->dataLeft->data(iterLeft,0);
+  			timeRight      = this->dataRight->data(iterRight,0);
 		}
 		else if(timeLeft<timeRight)
 		{
 
-                     this->_dataSynchro->_data[iter][0] = timeLeft;
+                     this->dataSynchro->data(iter,0) = timeLeft;
 
-			this->_dataSynchro->_data[iter][1] = this->_dataLeft->_data[iterLeft][1];
-			this->_dataSynchro->_data[iter][2] = this->_dataLeft->_data[iterLeft][2];
-			this->_dataSynchro->_data[iter][3] = this->_dataLeft->_data[iterLeft][3];
-			this->_dataSynchro->_data[iter][4] = this->_dataLeft->_data[iterLeft][4];
+			this->dataSynchro->data(iter,1) = this->dataLeft->data(iterLeft,1);
+			this->dataSynchro->data(iter,2) = this->dataLeft->data(iterLeft,2);
+			this->dataSynchro->data(iter,3) = this->dataLeft->data(iterLeft,3);
+			this->dataSynchro->data(iter,4) = this->dataLeft->data(iterLeft,4);
 
 
-			this->_dataSynchro->_data[iter][5] = 0;
-			this->_dataSynchro->_data[iter][6] = 0;
+			this->dataSynchro->data(iter,5) = 0;
+			this->dataSynchro->data(iter,6) = 0;
 		        if(iterRight>0){
-				this->_dataSynchro->_data[iter][7] = this->_dataRight->_data[iterRight-1][3];
-		        	this->_dataSynchro->_data[iter][8] = this->_dataRight->_data[iterRight-1][4];
+				this->dataSynchro->data(iter,7) = this->dataRight->data(iterRight-1,3);
+		        	this->dataSynchro->data(iter,8) = this->dataRight->data(iterRight-1,4);
 			}
 			iterLeft++;
-  			timeLeft   = this->_dataLeft->_data[iterLeft][0];
+  			timeLeft   = this->dataLeft->data(iterLeft,0);
 		}
 		else if (timeRight<timeLeft)
 		{
 
-		        this->_dataSynchro->_data[iter][0] = timeRight;
+		        this->dataSynchro->data(iter,0) = timeRight;
 
-			this->_dataSynchro->_data[iter][1] = 0;
-			this->_dataSynchro->_data[iter][2] = 0;
+			this->dataSynchro->data(iter,1) = 0;
+			this->dataSynchro->data(iter,2) = 0;
 			if(iterLeft>0){
-				this->_dataSynchro->_data[iter][3] = this->_dataLeft->_data[iterLeft-1][3];
-				this->_dataSynchro->_data[iter][4] = this->_dataLeft->_data[iterLeft-1][4];
+				this->dataSynchro->data(iter,3) = this->dataLeft->data(iterLeft-1,3);
+				this->dataSynchro->data(iter,4) = this->dataLeft->data(iterLeft-1,4);
 			}
 
-			this->_dataSynchro->_data[iter][5] = this->_dataRight->_data[iterRight][1];
-			this->_dataSynchro->_data[iter][6] = this->_dataRight->_data[iterRight][2];
-			this->_dataSynchro->_data[iter][7] = this->_dataRight->_data[iterRight][3];
-			this->_dataSynchro->_data[iter][8] = this->_dataRight->_data[iterRight][4];
+			this->dataSynchro->data(iter,5) = this->dataRight->data(iterRight,1);
+			this->dataSynchro->data(iter,6) = this->dataRight->data(iterRight,2);
+			this->dataSynchro->data(iter,7) = this->dataRight->data(iterRight,3);
+			this->dataSynchro->data(iter,8) = this->dataRight->data(iterRight,4);
 
 			iterRight++;
-  			timeRight      = this->_dataRight->_data[iterRight][0];
+  			timeRight      = this->dataRight->data(iterRight,0);
 		}		
 	}           
-	else if( iterLeft<=this->_dataLeft->_nbRow && iterRight>=this->_dataRight->_nbRow)
+	else if( iterLeft<=this->dataLeft->rows() && iterRight>=this->dataRight->rows())
 	{
 
-		        this->_dataSynchro->_data[iter][0] = timeLeft;
+		        this->dataSynchro->data(iter,0) = timeLeft;
 
-			this->_dataSynchro->_data[iter][1] = this->_dataLeft->_data[iterLeft][1];
-			this->_dataSynchro->_data[iter][2] = this->_dataLeft->_data[iterLeft][2];
-			this->_dataSynchro->_data[iter][3] = this->_dataLeft->_data[iterLeft][3];
-			this->_dataSynchro->_data[iter][4] = this->_dataLeft->_data[iterLeft][4];
+			this->dataSynchro->data(iter,1) = this->dataLeft->data(iterLeft,1);
+			this->dataSynchro->data(iter,2) = this->dataLeft->data(iterLeft,2);
+			this->dataSynchro->data(iter,3) = this->dataLeft->data(iterLeft,3);
+			this->dataSynchro->data(iter,4) = this->dataLeft->data(iterLeft,4);
 
-
-			this->_dataSynchro->_data[iter][5] = 0;
-			this->_dataSynchro->_data[iter][6] = 0;
+			this->dataSynchro->data(iter,5) = 0;
+			this->dataSynchro->data(iter,6) = 0;
 		        if(iterRight>0){
-				this->_dataSynchro->_data[iter][7] = this->_dataRight->_data[iterRight-1][3];
-		        	this->_dataSynchro->_data[iter][8] = this->_dataRight->_data[iterRight-1][4];
+				this->dataSynchro->data(iter,7) = this->dataRight->data(iterRight-1,3);
+		        	this->dataSynchro->data(iter,8) = this->dataRight->data(iterRight-1,4);
 			}
 		iterLeft++;
-  		timeLeft       = this->_dataLeft->_data[iterLeft][0];
+  		timeLeft       = this->dataLeft->data(iterLeft,0);
 	}
-	else  if( iterLeft>=this->_dataLeft->_nbRow && iterRight<=this->_dataRight->_nbRow)
+	else  if( iterLeft>=this->dataLeft->rows() && iterRight<=this->dataRight->rows())
 	{
 
-		        this->_dataSynchro->_data[iter][0] = timeRight;
+		        this->dataSynchro->data(iter,0) = timeRight;
 
-			this->_dataSynchro->_data[iter][1] = 0;
-			this->_dataSynchro->_data[iter][2] = 0;
+			this->dataSynchro->data(iter,1) = 0;
+			this->dataSynchro->data(iter,2) = 0;
 			if(iterLeft>0){
-				this->_dataSynchro->_data[iter][3] = this->_dataLeft->_data[iterLeft-1][3];
-				this->_dataSynchro->_data[iter][4] = this->_dataLeft->_data[iterLeft-1][4];
+				this->dataSynchro->data(iter,3) = this->dataLeft->data(iterLeft-1,3);
+				this->dataSynchro->data(iter,4) = this->dataLeft->data(iterLeft-1,4);
 			}
 
 
-			this->_dataSynchro->_data[iter][5] = this->_dataRight->_data[iterRight][1];
-			this->_dataSynchro->_data[iter][6] = this->_dataRight->_data[iterRight][2];
-			this->_dataSynchro->_data[iter][7] = this->_dataRight->_data[iterRight][3];
-			this->_dataSynchro->_data[iter][8] = this->_dataRight->_data[iterRight][4];
+			this->dataSynchro->data(iter,5) = this->dataRight->data(iterRight,1);
+			this->dataSynchro->data(iter,6) = this->dataRight->data(iterRight,2);
+			this->dataSynchro->data(iter,7) = this->dataRight->data(iterRight,3);
+			this->dataSynchro->data(iter,8) = this->dataRight->data(iterRight,4);
 		iterRight++;
-  		timeRight      = this->_dataRight->_data[iterRight][0];
+  		timeRight      = this->dataRight->data(iterRight,0);
 	}
 	else 
 	{
 		cout << " ERREUR" << endl;
 		cout << iter << " " <<  endl 
-                             << " iterL : " << iterLeft << "et le max" << this->_dataLeft->_nbRow 
-		             << " iterR : " << iterRight<< "et le max" << this->_dataRight->_nbRow << endl ;
+                             << " iterL : " << iterLeft << "et le max" << this->dataLeft->rows() 
+		             << " iterR : " << iterRight<< "et le max" << this->dataRight->rows() << endl ;
 	}	
 	iter ++;
-	if(iter>=this->_dataSynchro->_nbRow) finished = true; 
+	if(iter>=this->dataSynchro->rows()) finished = true; 
   }
   
   return 0;
@@ -371,7 +370,7 @@ int Encoder::synchronizeData()
 
 //function [x,y,theta] = computeWalkerPosition(time, delta0, delta1, L)
 /*
- * _dataSynchro->_data :
+ * dataSynchro->data :
 * #0:absTime 
 * #1:relPulseL 
 * #2:relDistL
@@ -386,15 +385,15 @@ int Encoder::synchronizeData()
 int Encoder::odometry(double L)
 {
        if(L<=0) return -1;
-       this->_data->resize(4, this->_dataSynchro->_nbRow);
+       this->data->resize(4, this->dataSynchro->rows());
 
        double dOmega(0), dS(0), deltaRight(0), deltaLeft(0);
        double xprec(0), yprec(0), thetaprec(0),x(0),y(0),theta(0) ;
   
-       for(int i=0; i< this->_dataSynchro->_nbRow;i++)
+       for(int i=0; i< this->dataSynchro->rows();i++)
         {
-           deltaRight = this->_dataSynchro->_data[i][6] ;
-           deltaLeft  = this->_dataSynchro->_data[i][2] ;
+           deltaRight = this->dataSynchro->data(i,6) ;
+           deltaLeft  = this->dataSynchro->data(i,2) ;
            dOmega     = (deltaRight-deltaLeft) / (L) ;
            dS         = (deltaRight+deltaLeft)/2;
 
@@ -407,17 +406,17 @@ int Encoder::odometry(double L)
 	           y  = yprec +(dS*sin(thetaprec+dOmega/2));      
 	   }
 
-           theta      = thetaprec + dOmega;
+     theta      = thetaprec + dOmega;
            
-           // store the results
-	   this->_data->_data[i][0] =  this->_dataSynchro->_data[i][0];
-           this->_data->_data[i][1] = x;
-	   this->_data->_data[i][2] = y;	   	
-	   this->_data->_data[i][3] = theta;
+     // store the results
+	   this->data->data(i,0) =  this->dataSynchro->data(i,0);
+     this->data->data(i,1) = x;
+	   this->data->data(i,2) = y;	   	
+	   this->data->data(i,3) = theta;
 	   
-           // update prec
-           xprec = x ;
-   	   yprec = y ;
+     // update prec
+     xprec = x ;
+     yprec = y ;
 	   thetaprec = theta ; 		           		
         }
   

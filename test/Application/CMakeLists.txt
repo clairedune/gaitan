@@ -7,6 +7,8 @@
 SET (SOURCE
 kinectInitConfig.cpp
 kinectVisualizeFeet.cpp
+kinectVisualizeBoxes.cpp
+kinectVisualizePointCloud.cpp
 kinectDisplay.cpp
 kinectAcquire.cpp
 )

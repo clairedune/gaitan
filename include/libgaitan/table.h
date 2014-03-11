@@ -28,21 +28,32 @@ namespace gaitan
 class Table
 {
   public:
-    double** _data; // data file  
-    int _nbRow;    // data number
-    int _nbCol;    // data type  
+    //double** _data; // data file  
+    Eigen::MatrixXd data;
     
-   // Eigen::MatrixXf _data;
+    
+  private:   
+    int nbRow;    // data number
+    int nbCol;    // data type  
+    
     
   public:	
     Table();
     Table(int col, int raw);
     ~Table();
-    int createFromFile(string filname);
+    
+    inline int rows(){return data.rows();}
+    inline void rows(const int & r){return data.conservativeResize(nbCol,r); nbRow=r;}
+    inline int cols(){return data.cols();}
+    inline void cols(const int & c){return data.conservativeResize(c,nbRow); nbCol=c;}
+
+    
+    
+    int  load(string filname);
     void print(int beg, int end);
     void print();
     void resize(int col, int raw);
-    int writeInFile(string filename, int precision);
+    int  save(string filename, int precision);
     void init();
 };
 }

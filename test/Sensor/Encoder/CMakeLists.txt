@@ -6,6 +6,7 @@
 
 SET (SOURCE
 testEncoder.cpp
+encoderGrabber.cpp
 )
 
 # rule for binary build

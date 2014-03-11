@@ -51,19 +51,23 @@ double fx, double fy, double cx, double cy)
       int height = dmap.getHeight();
       int width  = dmap.getWidth();
       point3D.resize(height*width,3);
+      
+      
       int index=0;
-      for(int i = 0 ; i< height ; i++){
+      for(int  i=0 ; i< height ; i++){
        for(int j=0 ; j< width ; j++){
-            float z =dmap[i][j];
-           if (fabs(z + 1.f) > std::numeric_limits<float>::epsilon() & fabs(z) !=1){
+           
+           float z =dmap[i][j];
+           if (fabs(z + 1.f) > std::numeric_limits<float>::epsilon() & z>0 ){
             point3D(index,2) = z;
-            point3D(index,0) = (i-cx)*point3D(index,2)/fx; 
-            point3D(index,1) = (j-cy)*point3D(index,2)/fy;
+            point3D(index,0) = (float)((i-cx)*point3D(index,2)/fx); 
+            point3D(index,1) = (float)((j-cy)*point3D(index,2)/fy);
             index++;
           }
         }
       }
-      
+      // resize the point max to remove the points that have been pruned du to negative z value
+      point3D.conservativeResize(index,3);
       return 1;
   
 }
@@ -93,19 +97,25 @@ int Conversion::convert(const Eigen::MatrixXf & depthMat,
                                  double &cx,
                                  double &cy)
 {
+      //max resize
       point3D.resize(depthMat.rows()*depthMat.cols(),3);
+    
       int index(0);
       for (int i=0; i<depthMat.rows();i++)
         for (int j=0 ; j<depthMat.cols();j++)
         {
-          if (fabs(depthMat(i,j) + 1.f) > std::numeric_limits<float>::epsilon() & fabs(depthMat(i,j)) !=1){
-            point3D(index,2) = depthMat(i,j);
+          float z = depthMat(i,j);
+          if (fabs( z+ 1.f) > std::numeric_limits<float>::epsilon() 
+            & fabs(z) !=1
+            & z > std::numeric_limits<float>::epsilon() ){
+            point3D(index,2) = z;
             point3D(index,0) = (i-cx)*point3D(index,2)/fx; 
             point3D(index,1) = (j-cy)*point3D(index,2)/fy;
             index++;
           }
         }
-        
+        //min resize
+        point3D.conservativeResize(index,3);
         return 1;
 }     
 
@@ -171,6 +181,8 @@ int Conversion::convert(const Eigen::MatrixXf & matrix,
                         pcl::PointCloud<pcl::PointXYZRGB>::Ptr & cloud, 
                         const int & r, const int & g, const int & b)
 {
+  
+   //        cloud->empty();
  for (int i=0; i<matrix.rows();i++){
             pcl::PointXYZRGB basic_point;
             basic_point.x = matrix(i,0);
@@ -185,6 +197,8 @@ int Conversion::convert(const Eigen::MatrixXf & matrix,
 }
 
 int Conversion::convert(const Eigen::MatrixXf & matrix, pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud){
+ //cloud->empty();
+ 
  for (int i=0; i<matrix.rows();i++){
             pcl::PointXYZ basic_point;
             basic_point.x = matrix(i,0);
@@ -210,6 +224,8 @@ int Conversion::convert(const pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud, Eigen
 
 int Conversion::convert(const pcl::PointCloud<pcl::PointXYZ>::Ptr & cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr & colorCloud, 
                        const int & r, const int & g, const int & b){
+       
+       colorCloud->empty();
        for (int i=0; i<cloud->points.size ();i++){
             pcl::PointXYZRGB point;
             point.x = cloud->points[i].x;

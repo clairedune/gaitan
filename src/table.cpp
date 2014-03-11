@@ -33,49 +33,47 @@ using namespace std;
 
 namespace gaitan
 {
-Table::Table(){
-  this->_nbRow      = 10;
-  this->_nbCol      = 7;
+Table::Table():nbRow(10),nbCol(7){
   this->init();
 }
 
-Table::Table(int  col, int  raw){
-  this->_nbRow      = raw;
-  this->_nbCol      = col;
+Table::Table(int  cols, int  rows):nbRow(rows),nbCol(cols) {
   this->init();
 }
 
 
 void Table::init(){
-  this->_data = (double**)malloc(this->_nbRow*this->_nbCol*sizeof(double));
+   
+  data.resize(this->nbRow, this->nbCol);
+  
+  //this->data = (double**)malloc(this->_nbRow*this->_nbCol*sizeof(double));
  
-  for(int i=0;i<this->_nbRow;i++){    
-    _data[i]=(double*)malloc(this->_nbCol*sizeof(double));
-    for(int j=0;j<this->_nbCol; j++){
-	  _data[i][j]=0;  
-    }
-  }
+  //for(int i=0;i<this->_nbRow;i++){    
+  //  data[i]=(double*)malloc(this->_nbCol*sizeof(double));
+  //  for(int j=0;j<this->_nbCol; j++){
+	//  data[i][j]=0;  
+  //  }
+  //}
   
 }
 
-void Table::resize(int col, int raw){
-  this->_nbRow      = raw;
-  this->_nbCol      = col;
+void Table::resize(int cols, int rows){
+  this->nbRow      = rows;
+  this->nbCol      = cols;
   this->init();
-  
 }
 
 void Table::print(){
- print(0, this->_nbRow-1);
+ print(0, this->nbRow-1);
 }
 
 void Table::print(int deb, int end){
-   for( int i=0 ; i < this->_nbRow ; i++ ){ 
+   for( int i=0 ; i < this->nbRow ; i++ ){ 
     if(i<=end && i>=deb){
      std::cout << endl << i << "\t";
-     for(int j=0;j<this->_nbCol; j++){
+     for(int j=0;j<this->nbCol; j++){
 	  std::cout 	<< std::setprecision(11) 
-			<< this->_data[i][j] 
+			<< this->data(i,j) 
 			<< "\t";
       }
     }
@@ -86,15 +84,15 @@ void Table::print(int deb, int end){
 
 
 Table::~Table(){
-  for(int i=0;i<this->_nbRow;i++){
-    free(this->_data[i]);
-  }
-  free(_data);
+//  for(int i=0;i<this->_nbRow;i++){
+//    free(this->data[i]);
+//  }
+//  free(data);
 }
 
 
 
-int Table::createFromFile(string filename){
+int Table::load(string filename){
   ifstream file(filename.c_str(), ios::in);
   if(file)
     {
@@ -104,7 +102,7 @@ int Table::createFromFile(string filename){
       while(getline(file, line))
 	nbLine++;      
       
-      this->_nbRow = nbLine;
+      this->nbRow = nbLine;
       //FIXME : calculer le nombre de lignes à la volée this->_nbCol = 7;
       this->init();
       
@@ -113,30 +111,31 @@ int Table::createFromFile(string filename){
       file.seekg(0,ios::beg);
 
       double x;
-      for(int i=0;i<this->_nbRow;i++){
-	for(int j=0;j<this->_nbCol;j++){
-	  file >>  this->_data[i][j];	 
-	}
+      for(int i=0;i<this->nbRow;i++){
+	      for(int j=0;j<this->nbCol;j++){
+          file >> x;
+          this->data(i,j)=x;	 
+	      }
       }
       file.close();
     }
   else 
     {
       cerr << "impossible d'ouvrir le fichier"<<endl;
-      return -1;
+      return 0;
     }
    
-   return 0;
+   return 1;
 }
 
-int Table::writeInFile(string filename, int precision=10){
+int Table::save(string filename, int precision=10){
 
 	ofstream file(filename.c_str(), ios::out);
 
 	if(file){
-      		for(int i=0;i<this->_nbRow;i++){		
-			for(int j=0;j<this->_nbCol;j++){
-	  			file <<  setprecision(precision) <<this->_data[i][j] <<"\t";	 
+      		for(int i=0;i<this->nbRow;i++){		
+			for(int j=0;j<this->nbCol;j++){
+	  			file <<  setprecision(precision) <<this->data(i,j) <<"\t";	 
 			}
 			file << endl;	
       		}

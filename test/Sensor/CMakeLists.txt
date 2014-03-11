@@ -26,4 +26,4 @@ FOREACH(source ${SOURCE})
 ENDFOREACH(source)
 
 add_subdirectory(Kinect)
-#add_subdirectory(Encoder)
+add_subdirectory(Encoder)

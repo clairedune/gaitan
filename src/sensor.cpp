@@ -33,45 +33,45 @@ namespace gaitan
 {
 Sensor::Sensor()
 {
-   this->_data        = new Table(4,10);
+   this->data        = new Table(4,10);
    this->initData();
 }
 
 
 Sensor::Sensor(string filename)
 { 
-  if(this->readFile(filename)!=0)
+  if(this->load(filename)!=0)
    {
-	 this->_data        = new Table(4,10);
-   	this->initData();
+  	  this->data        = new Table(4,10);
+    	this->initData();
    }
 }
 
 void Sensor::initData()
 {
-   this->_data->init();
+   this->data->init();
 }
 
-void Sensor::print(int deb, int end){
-  this->_data->print(deb, end);
+void Sensor::print(const int & deb, const int &end){
+  this->data->print(deb, end);
 }
 
 void Sensor::print(){
-  this->_data->print();
+  this->data->print();
 }
 
-int Sensor::writeInFile(string outfile, int precision){
-  this->_data->writeInFile(outfile,precision);
+int Sensor::save(const string&  outfile, const int &precision){
+  this->data->save(outfile,precision);
   return 0;
 }
 
 Sensor::~Sensor(){
- delete this->_data; 
+ delete this->data; 
 }
 
 
-int Sensor::readFile(string filename){
-  return this->_data->createFromFile(filename);
+int Sensor::load(const string &  filename){
+  return this->data->load(filename);
 }
 
 //int Sensor::acquire(){}
@@ -81,8 +81,8 @@ int Sensor::readFile(string filename){
 // Then the other columns are data
 Table* Sensor::synchronizeZeroBloc(Sensor* s1, Sensor* s2)
 { 
-  int nbRow1(s1->_data->_nbRow), nbCol1(s1->_data->_nbCol);  
-  int nbRow2(s2->_data->_nbRow), nbCol2(s2->_data->_nbCol);
+  int nbRow1(s1->data->rows()), nbCol1(s1->data->cols());  
+  int nbRow2(s2->data->rows()), nbCol2(s2->data->cols());
      
   // nb columns : (col_s1 - col_0_time) + (col_s2 - col_0_time) + col_time
   int nbCol = (nbCol1 - 1) + (nbCol2-1) + 1 ;
@@ -94,22 +94,22 @@ Table* Sensor::synchronizeZeroBloc(Sensor* s1, Sensor* s2)
 
 
   // get the first time in the two files
-  double time1  = s1->_data->_data[iter1][0];
-  double time2  = s2->_data->_data[iter2][0];
+  double time1  = s1->data->data(iter1,0);
+  double time2  = s2->data->data(iter2,0);
   // find the file that start after and shift the other iterator
   if (time1>time2){
 	//cout << "Sensor 1 started after" << endl;
 		do{
 			iter2++;
-			time2  = s2->_data->_data[iter2][0];
-		}while (time1>time2 && iter2<s2->_data->_nbRow);
+			time2  = s2->data->data(iter2,0);
+		}while (time1>time2 && iter2<s2->data->rows());
 				
   }
   else {
 	//cout << "Sensor 2 started after "<< endl;
 		do{
 			iter1++;
-			time1  = s1->_data->_data[iter1][0];
+			time1  = s1->data->data(iter1,0);
 		}while (time2>time1 && iter1<nbRow1);
  } 
 
@@ -128,120 +128,118 @@ Table* Sensor::synchronizeZeroBloc(Sensor* s1, Sensor* s2)
    	if( iter1 < nbRow1 && iter2 < nbRow2){
 		//if the two times are the same
 		if(time1==time2){   
-			synchro->_data[iter][0] = time1;
+			synchro->data(iter,0) = time1;
 			for (int i=1;i<nbCol1;i++){
-				synchro->_data[iter][i] = s1->_data->_data[iter1][i];
+				synchro->data(iter,i)= s1->data->data(iter1,i);
 			}
 			
 			for (int i=nbCol1;i<nbCol;i++){
-				synchro->_data[iter][i] = s2->_data->_data[iter2][i-nbCol1+1];
+				synchro->data(iter,i) = s2->data->data(iter2,i-nbCol1+1);
 			}
 
 			iter1++;
 			iter2++;
 			if (iter1<nbRow1)
-  			time1       = s1->_data->_data[iter1][0];
+  			time1       = s1->data->data(iter1,0);
 			if (iter2<nbRow2)
-  			time2       = s2->_data->_data[iter2][0];
+  			time2       = s2->data->data(iter2,0);
 		}
 		else if(time1<time2)
 		{
 
-			synchro->_data[iter][0] = time1;
+			synchro->data(iter,0) = time1;
 
 			for (int i=1;i<nbCol1;i++)
  			{
-				synchro->_data[iter][i] = s1->_data->_data[iter1][i];
+				synchro->data(iter,i) = s1->data->data(iter1,i);
 				
 			}
 			
 			for (int i=nbCol1;i<nbCol;i++)
  			{
 				if (iter2>0)
-					synchro->_data[iter][i] = s2->_data->_data[iter2-1][i-nbCol1+1];
+					synchro->data(iter,i) = s2->data->data(iter2-1,i-nbCol1+1);
 				else 
-					synchro->_data[iter][i]=0;
+					synchro->data(iter,i)=0;
 			}
 
 			iter1++;
 			if (iter1<nbRow1)
-  			time1       = s1->_data->_data[iter1][0];
+  			time1       = s1->data->data(iter1,0);
 
 		}
 		else if (time2<time1)
 		{
 
-		         synchro->_data[iter][0] = time2;
+		         synchro->data(iter,0) = time2;
 
                         for (int i=1;i<nbCol1;i++)
  			{
 				if (iter1>0)
-					synchro->_data[iter][i] = s1->_data->_data[iter1-1][i];
+					synchro->data(iter,i) = s1->data->data(iter1-1,i);
 				else 
-					synchro->_data[iter][i] = 0;
+					synchro->data(iter,i) = 0;
 				
 			}
 			
 			for (int i=nbCol1;i<nbCol;i++)
  			{
-				synchro->_data[iter][i] = s2->_data->_data[iter2][i-nbCol1+1];
+				synchro->data(iter,i)= s2->data->data(iter2,i-nbCol1+1);
 			}
 
 			iter2++;
 			if (iter2<nbRow2)
-  			time2       = s2->_data->_data[iter2][0];
+  			time2       = s2->data->data(iter2,0);
 		}		
 	}           
 	else if( iter1<nbRow1 && iter2>=nbRow2)
 	{  
-		synchro->_data[iter][0] = time1;
+		synchro->data(iter,0) = time1;
 
-                        for (int i=1;i<s1->_data->_nbCol;i++)
+      for (int i=1;i<s1->data->cols();i++)
  			{
-				synchro->_data[iter][i] = s1->_data->_data[iter1][i];
-				
+				synchro->data(iter,i) = s1->data->data(iter1,i);
 			}
 			
 			for (int i=nbCol1;i<nbCol;i++)
  			{
 				if (iter2>0)
-					synchro->_data[iter][i] = s2->_data->_data[iter2-1][i-nbCol1+1];
+					synchro->data(iter,i) = s2->data->data(iter2-1,i-nbCol1+1);
 				else 
-					synchro->_data[iter][i] = 0;
+					synchro->data(iter,i) = 0;
 			}
 
 			iter1++;
 			if (iter1<nbRow1)
-  			time1       = s1->_data->_data[iter1][0];
+  			time1       = s1->data->data(iter1,0);
 	}
 	else  if( iter1>=nbRow1 && iter2<nbRow2)
 	{
-	         synchro->_data[iter][0] = time2;
+	         synchro->data(iter,0) = time2;
 
                         for (int i=1;i<nbCol;i++)
  			{
 				if (iter1>0)
-					synchro->_data[iter][i] = s1->_data->_data[iter1-1][i];
+					synchro->data(iter,i) = s1->data->data(iter1-1,i);
 				else 
-					synchro->_data[iter][i] = 0;
-				
+					synchro->data(iter,i) = 0;
 			}
 			
 			for (int i=nbCol2;i<nbCol;i++)
  			{
-				synchro->_data[iter][i] = s2->_data->_data[iter2][i-nbCol1+1];
+				synchro->data(iter,i) = s2->data->data(iter2,i-nbCol1+1);
 			}
 
 			iter2++;
 			if (iter2<nbRow2)
-  			time2       = s2->_data->_data[iter2][0];
+  			time2       = s2->data->data(iter2,0);
 	}
 	else 
 	{
 		cout << " ERREUR" << endl;
 		cout << iter << " " <<  endl 
-                             << " iterL : " << iter1 << "et le max" << s1->_data->_nbRow 
-		             << " iterR : " << iter2<< "et le max" << s2->_data->_nbRow << endl ;
+         << " iterL : " << iter1 << "et le max" << s1->data->rows() 
+         << " iterR : " << iter2<< "et le max" << s2->data->rows() << endl ;
 	}	
 	iter ++;
 	if(iter>=nbRow) finished = true; 

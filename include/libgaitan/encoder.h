@@ -30,10 +30,10 @@ namespace gaitan
   {
 
   private:
-    Table *_dataRaw;  // data file as acquired by the phidget provided code
-    Table *_dataLeft; // data corresponding to the left encoder
-    Table *_dataRight; // data corresponding to the right encoder
-    Table *_dataSynchro; // reorganise and synchronise left and right data
+    Table *dataRaw;  // data file as acquired by the phidget provided code
+    Table *dataLeft; // data corresponding to the left encoder
+    Table *dataRight; // data corresponding to the right encoder
+    Table *dataSynchro; // reorganise and synchronise left and right data
 
     
   public:	
@@ -47,9 +47,9 @@ namespace gaitan
     void print();
     void initData();
     int odometry(double); 
-    int writeInFileLeft(string filename);
-    int writeInFileRight(string filename);
-    int writeInFileSynchro(string filename);
+    int saveLeft(string filename);
+    int saveRight(string filename);
+    int saveSynchro(string filename);
  
   private  :
     void splitData();

@@ -7,7 +7,6 @@
 SET (SOURCE
 #main.cpp
 #testPlotEncoder.cpp
-#testGnuplot.cpp
 #testGlut.cpp
 #testPlaneFitting.cpp
 #testEigen.cpp
@@ -29,5 +28,5 @@ FOREACH(source ${SOURCE})
 ENDFOREACH(source)
 
 add_subdirectory(Sensor) 
-add_subdirectory(Geometry)
+#add_subdirectory(Geometry)
 add_subdirectory(Application)

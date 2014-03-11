@@ -57,9 +57,6 @@ namespace gaitan
   
   /*!
    * \brief constructor of class RGBDSensor with default values 
-   * 
-   * 
-   * 
    */
   RGBDSensor::RGBDSensor() : Sensor(),
       rgbFilenamePattern("RGB_%07d.ppm"),
@@ -67,9 +64,9 @@ namespace gaitan
       timeFilename("TimeSampling.dat"),
       confFilename("conf.dat"),
       gMk(Eigen::MatrixXf::Identity(4,4)), 
-      fx(), fy(), cx(), cy(){ 
+      fx(), fy(), cx(), cy(),fov(-0.6,0.2,-0.5,0.6,0.0,1.0){ 
         
-      this->_data  = new Table(2,10);
+      this->data  = new Table(2,10);
       // to remove all the artifacts under the ground
       Box underground (-10,10, -10, 10, -10,0);  
       forbiddenZone.push_back(underground);
@@ -77,11 +74,20 @@ namespace gaitan
         
       }
       
+   /*! remove the points that are not in the field of view*/
+  int RGBDSensor::limitFov(Eigen::MatrixXf & ptsIn, Eigen::MatrixXf & ptsOut, double & distThreshold)
+  {
+
+   this->fov.inlierSelection( ptsIn, 
+                              ptsOut, 
+                              distThreshold);
+   return 1;
+       
+   }      
   
   /*!
    * \brief constructor of class RGBDSensor with default values 
    *  and given value for internal parameters
-   * 
    * 
    */
    RGBDSensor::RGBDSensor(double fx, double fy, double cx, double cy) 
@@ -89,9 +95,11 @@ namespace gaitan
     depthFilenamePattern("depth_%07d.pfm"),
     timeFilename("TimeSampling.dat"),
     confFilename("conf.dat"),
-    gMk(Eigen::MatrixXf::Identity(4,4))  
+    gMk(Eigen::MatrixXf::Identity(4,4)),
+    fov(-0.6,0.2,-0.5,0.6,0.0,1.0) 
   {  
-   
+         this->data  = new Table(2,10);
+
    // to remove all the artifacts under the ground
       Box underground (-10,10, -10, 10, -10,0);  
       forbiddenZone.push_back(underground);
@@ -106,9 +114,6 @@ namespace gaitan
   
   /*!
    * \brief destructor of the RGBDSensor Class 
-   * 
-   * 
-   * 
    */
  RGBDSensor::~RGBDSensor()
   {
@@ -127,7 +132,6 @@ namespace gaitan
   
    /*! 
    * \brief display the parameters of the Sensor 
-   * 
    */
   void RGBDSensor::print()
   {
@@ -147,6 +151,32 @@ namespace gaitan
     
   }
   
+  void RGBDSensor::print(const int & deb , const int& end)
+  {
+    std::cout << "RGBD Sensor set up" << std::endl;
+    std::cout << "internal parameters :\n"
+         << "fx = " << this->fx << "\t"
+         << "fy = " << this->fy << "\t"
+         << "cx = " << this->cx << "\t"
+         << "cy = " << this->cy << std::endl;    
+    std::cout << "external parameters : \n";
+    std::cout << this->gMk << std::endl;  
+    
+    for (std::vector<Box>::iterator it = this->forbiddenZone.begin() ; it != this->forbiddenZone.end(); ++it)
+      {
+        (*it).print();
+      }    
+    
+    std::cout << "Time sampling  and image number : "<< std::endl;
+    this->data->print(deb, end);
+    
+  }
+  
+  
+  
+  
+  
+  
 /*! Write a conf file with the sensor param and the authorized areas */
 int RGBDSensor::saveConfFile(const std::string &pathName)
   {
@@ -157,6 +187,9 @@ int RGBDSensor::saveConfFile(const std::string &pathName)
 	  if(file){
 	  			file << this->fx << "\t" << this->fy << "\t" << this->cx << "\t" << this->cy << std::endl; 
           file << this->gMk << std::endl;
+          file<< fov.getMinX() << "\t"<<fov.getMaxX()<< std::endl;
+          file<< fov.getMinY() << "\t"<<fov.getMaxY()<< std::endl;
+          file<< fov.getMinZ() << "\t"<<fov.getMaxZ()<< std::endl;
           file << this->forbiddenZone.size()<< std::endl;
           for (std::vector<Box>::iterator it = this->forbiddenZone.begin() ; it != forbiddenZone.end(); ++it)
           {
@@ -176,10 +209,10 @@ int RGBDSensor::saveConfFile(const std::string &pathName)
   
   
 /*! Read the time file and set the data */
-int RGBDSensor::loadTimeLine(const std::string &pathName)
+int RGBDSensor::loadTimeSampling(const std::string &pathName)
 {
    std::string filename = this->timePath(pathName); 
-   this->_data->createFromFile(filename);
+   return this->load(filename);
 }  
 
 /*! Read the conf file to set the fobidden area value */
@@ -202,14 +235,23 @@ int RGBDSensor::loadConfFile(const std::string &pathName)
             for(int j=0;j<4;j++){
               file >> this->gMk(i,j);
             }
-        
+              
+          float minX, minY, minZ, maxX, maxY, maxZ;   
+          file >> minX;
+          file >> maxX;
+          file >> minY;
+          file >> maxY;
+          file >> minZ;
+          file >> maxZ;
+          fov.setParameters(minX, maxX, minY, maxY, minZ, maxZ); 
+           
           int nbBox;
           file >> nbBox;
           //std::cout << "NB BOX------>" << nbBox << std::endl ;
           for(int i=0; i<nbBox ; i++)
           {
             
-           float minX, minY, minZ, maxX, maxY, maxZ;
+           
            file >> minX;
            file >> maxX;
            file >> minY;
@@ -305,7 +347,6 @@ Plane RGBDSensor::ground(const Eigen::MatrixXf& pointCloud,  double confidence){
   
   // OR Our method
   plane.findParameters(ptsIn,ptsOut,confidence);
-  plane.print();
   
   
   return plane;
@@ -544,12 +585,48 @@ int RGBDSensor::clearGroundPoints(Eigen::MatrixXf & ptsIn,Eigen::MatrixXf & ptsO
 {
   // select the points that are not on the ground
   //Plane gplane(0,0,1,0);
-  gplane->print();
+  //gplane->print();
   gplane->inlierSelection(ptsIn, ptsOut, distThreshold);  
   return 1;    
 }
 
 
+/*!
+ *
+ * \brief Set boxes around clusters
+ * 
+ *   \warning the point coordinates should be expressed in the Ground frame
+ * 
+ */ 
+int RGBDSensor::clusterBoundingBoxes(const Eigen::MatrixXf & pts, 
+                             const pcl::PointCloud<pcl::PointXYZ>::Ptr &cloudFeetFiltered,
+                             const std::vector<pcl::PointIndices> &clusterIndices,
+                             std::vector<Box> &boxes
+                             )
+{ 
+ 
+  int j=0;
+  // Creating the Clusters
+  for (std::vector<pcl::PointIndices>::const_iterator it = clusterIndices.begin (); it != clusterIndices.end (); ++it)
+      {
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloudCluster (new pcl::PointCloud<pcl::PointXYZ>);
+        for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); pit++)
+         cloudCluster->points.push_back (cloudFeetFiltered->points[*pit]); 
+         cloudCluster->width = cloudCluster->points.size ();
+         cloudCluster->height = 1;
+         cloudCluster->is_dense = true;
+        
+        // create a Matrix cluster
+        Eigen::MatrixXf ptsCluster;
+        Conversion::convert(cloudCluster, ptsCluster);                    
+        Box box;
+        box.findParameters(ptsCluster);
+        boxes.push_back(box); 
+//        std::cout << "Point cloud in the forbidden area: " << cloudCluster->points.size () << " data points." << std::endl;
+        j++;
+    }
+  return 1;
+}
 /*!
  *
  * \brief Use a depthmap to find the clusters of points that are due to the wheels and
@@ -570,42 +647,16 @@ int RGBDSensor::initForbiddenBoxes(const Eigen::MatrixXf & pts,
   // 3. segment it  
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloudFeetFiltered (new pcl::PointCloud<pcl::PointXYZ>);
   std::vector<pcl::PointIndices> clusterIndices;
-  
   this->detectClusters(pts, cloudFeetFiltered,clusterIndices, clusterTolerance, minClusterSize,maxClusterSize,leafSize);
- 
- 
-  int j=0;
-  // Creating the Clusters
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr colorCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-  for (std::vector<pcl::PointIndices>::const_iterator it = clusterIndices.begin (); it != clusterIndices.end (); ++it)
-      {
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloudCluster (new pcl::PointCloud<pcl::PointXYZ>);
-        for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); pit++)
-         cloudCluster->points.push_back (cloudFeetFiltered->points[*pit]); 
-         cloudCluster->width = cloudCluster->points.size ();
-         cloudCluster->height = 1;
-         cloudCluster->is_dense = true;
-        
-        // create a Matrix cluster
-         Eigen::MatrixXf ptsCluster;
-         Conversion::convert(cloudCluster, ptsCluster);                    
-         
-         Box box;
-         box.findParameters(ptsCluster);
-         this->forbiddenZone.push_back(box); 
-
-         std::cout << "Point cloud in the forbidden area: " << cloudCluster->points.size () << " data points." << std::endl;
-         j++;
-      }
-    std::cout << "There are " << j << " fdorbidden areas " << endl;
+  this->clusterBoundingBoxes(pts, cloudFeetFiltered,clusterIndices,this->forbiddenZone);
   return 1;
-  }
-  
-     /*! remove the points that are in the forbidden area */ 
-    int RGBDSensor::clearForbiddenZone( Eigen::MatrixXf & ptsIn, Eigen::MatrixXf & ptsOut, double distThreshold ){
-      
-       return Box::inlierSelection( this->forbiddenZone,ptsIn,ptsOut,distThreshold);
-   }
+}
+
+     
+/*! remove the points that are in the forbidden area */ 
+int RGBDSensor::clearForbiddenZone( Eigen::MatrixXf & ptsIn, Eigen::MatrixXf & ptsOut, double distThreshold ){
+      return Box::inlierSelection( this->forbiddenZone,ptsIn,ptsOut,distThreshold);
+}
   
   
   

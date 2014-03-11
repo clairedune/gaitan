@@ -68,11 +68,11 @@ namespace gaitan
    /*!
    * \brief kinect constructor with defaut kinect parameters
    */
-   Kinect::Kinect() : RGBDSensor(594.0,591.0,339.05, 247.5)
+   //Kinect::Kinect() : RGBDSensor(594.0,591.0,339.05, 247.5)
+   Kinect::Kinect() : RGBDSensor(525.0,525.0,319.05, 239.5)
    {
      return;
    }
-
       
    Kinect::Kinect(double fx, double fy, double cx, double cy) 
   {  
@@ -226,18 +226,16 @@ namespace gaitan
 
   }
   
-  
+// DEPRECATED  
 Eigen::MatrixXf Kinect::pointCloud(const std::string & path,const int &index)
 {
       Eigen::MatrixXf pts3D;
       // create the visp image to read the visp file          
-      // FIXME may be not re alluy good to fix the size here ...
-      int width(640), height(480);
-      vpImage<float> dmap(height,width);//for medium resolion 
+      vpImage<float> dmap;
       
       // build the filename
       std::string filename =  this->depthPath(path, index);
-      std::cout << "filename  : " << filename << std::endl;
+      //std::cout << "filename  : " << filename << std::endl;
      
       try{
             vpImageIo::readPFM(dmap,filename.c_str());
@@ -247,8 +245,28 @@ Eigen::MatrixXf Kinect::pointCloud(const std::string & path,const int &index)
         }
 
      Conversion::convert( dmap , pts3D , this->fx, this->fy, this->cx, this->cy);
-    
-      return pts3D;
+     dmap.destroy();
+     return pts3D;
+}
+
+
+int Kinect::pointCloud(const std::string & path,const int &index, Eigen::MatrixXf & pts3D)
+{
+      vpImage<float> dmap;//(height,width);//for medium resolion 
+      // build the filename
+      std::string filename =  this->depthPath(path, index);
+      //std::cout << "filename  : " << filename << std::endl;
+     
+      try{
+            vpImageIo::readPFM(dmap,filename.c_str());
+      }
+      catch(...){
+               std::cerr << "ERROR KINECT::DEPTHMAP >> Catch an exception when reading image " << filename << std::endl;
+        }
+
+     Conversion::convert( dmap , pts3D , this->fx, this->fy, this->cx, this->cy);
+     dmap.destroy();
+     return 1;
 }
     
 }

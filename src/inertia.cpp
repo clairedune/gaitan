@@ -35,14 +35,14 @@ using namespace std;
 namespace gaitan
 {
 Inertia::Inertia(){
-   this->_data = new Table(10,10); 
+   this->data = new Table(10,10); 
    this->initData();
 }
 
 Inertia::Inertia(string filename)
 {
-  this->_data = new Table(10,10);
-  this->_data->createFromFile(filename);
+  this->data = new Table(10,10);
+  this->data->load(filename);
   
 }
 
@@ -53,13 +53,13 @@ Inertia::~Inertia(){
 void Inertia::print(int a, int b)
 {
    cout << endl<<"-------- INERTIA -------" << endl;
-   this->_data->print(a,b);
+   this->data->print(a,b);
 }
 
-/*int Inertia::readFile(string filename){
-  this->_data->createFromFile(filename);
+int Inertia::load(string filename){
+  this->data->load(filename);
   return 0;
-}*/
+}
 
 }
 

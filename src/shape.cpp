@@ -18,7 +18,7 @@ namespace gaitan
      Eigen::VectorXf Shape::getParameters(){return this->parameters;}
      
      void Shape::print(){
-		 std::cout <<"The shape parameters are:\n" << this->parameters.transpose() << std::endl;
+		        std::cout <<"The shape parameters are:\n" << this->parameters.transpose() << std::endl;
 		 }
      
      /*

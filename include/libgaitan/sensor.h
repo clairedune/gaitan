@@ -29,7 +29,7 @@ namespace gaitan
 class Sensor
 {
   public:
-    Table *_data;
+    Table *data;
     
   public:	
     Sensor();
@@ -37,10 +37,11 @@ class Sensor
     Sensor(string filename); 
     virtual ~Sensor();
     
-    int readFile(string filename);
-    int writeInFile(string filename, int precision=15);
-    virtual void print(int beg, int end);
-    virtual void print();
+    
+    int load(const string & filename);
+    int save(const string &filename, const int &precision=15);
+    void print(const int  & beg, const int & end);
+    void print();
     void initData();
     
     

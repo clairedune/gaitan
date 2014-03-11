@@ -97,7 +97,7 @@ MESSAGE(STATUS "library de la pcl ${PCL_LIBRARY_DIRS}")
 LIST(APPEND GAITAN_EXTERN_LIBS ${PCL_LIBRARIES})
 
 #Inclusion de gnupot pour C++
-LIST(APPEND GAITAN_EXTERN_INCLUDE_DIR ~/projects/gnuplot-iostream)
+#LIST(APPEND GAITAN_EXTERN_INCLUDE_DIR ~/projects/gnuplot-iostream)
 
 #Ajout de open Ni
 SET(openni_INCLUDE_DIR ~/projects/openni/Include)
@@ -112,6 +112,9 @@ LIST(APPEND GAITAN_EXTERN_LIBS  OpenNI2)
 
 #Ajout de la lib eigen
 LIST(APPEND GAITAN_EXTERN_INCLUDE_DIR /usr/local/include/eigen3)
+
+#Ajout de la lib phidegt
+LIST(APPEND GAITAN_EXTERN_LIBS libphidget21)
 
 #----------------------------------------------------------------------
 # Concatenate intern and third party include dirs

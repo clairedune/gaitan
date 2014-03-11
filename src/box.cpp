@@ -46,24 +46,17 @@ namespace gaitan
      Box::~Box(){}
      
      
-     double Box::getMinX(){
-       return this->parameters(0);
-       }
-     double Box::getMaxX(){
-       return this->parameters(1);
-       }
-     double Box::getMinY(){
-       return this->parameters(2);
-       }
-     double Box::getMaxY(){
-       return this->parameters(3);
-       }
-     double Box::getMinZ(){
-       return this->parameters(4);
-       }
-     double Box::getMaxZ(){
-       return this->parameters(5);
-       }
+    /*! Compute the distance between two boxes*/
+    float Box::distance(Box & box1,Box & box2)
+    {
+      
+      float distanceX(std::min(abs(box1.getMinX()-box2.getMaxX()),abs(box2.getMinX()-box1.getMaxX())));
+      float distanceY(std::min(abs(box1.getMinY()-box2.getMaxY()),abs(box2.getMinY()-box1.getMaxY())));
+      float distanceZ(std::min(abs(box1.getMinZ()-box2.getMaxZ()),abs(box2.getMinZ()-box1.getMaxZ())));
+      
+
+      return std::min(distanceX, std::min(distanceY, distanceZ));  
+    } 
      
      
    //  Box & Box::operator= (Box  box){
@@ -72,7 +65,10 @@ namespace gaitan
    //  }  
      
     void Box::print(){
-		 std::cout <<"The box parameters are:\n" << this->parameters << std::endl;
+		 std::cout <<"The box parameters are:\n" << 
+      "X min :" << this->parameters(0) << " \t max " << this->parameters(1)<< std::endl<<
+      "Y min :" << this->parameters(2) << " \t max " << this->parameters(3)<< std::endl<<
+      "Z min :" << this->parameters(4) << " \t max " << this->parameters(5)<< std::endl;
 		 }
 		 
      
@@ -211,13 +207,14 @@ int Box::inlierSelection( Eigen::MatrixXf & ptsIn,
      int Box::findParameters(const MatrixXf & pts ){
        float minx(300), maxx(-300); 
        float miny(300), maxy(-300); 
-       float minz(300), maxz(-300); 
+       float minz(300), maxz(-300);
+       float x(0.0), y(0.0),z(0.0); 
        
        for(int i=0 ; i< pts.rows() ; i++)
        {
-            float x = pts(i,0);
-            float y = pts(i,1);
-            float z = pts(i,2);
+            x = pts(i,0);
+            y = pts(i,1);
+            z = pts(i,2);
             
             if (x<minx) minx=x;
             else if (x>maxx) maxx=x;  
@@ -233,6 +230,13 @@ int Box::inlierSelection( Eigen::MatrixXf & ptsIn,
             
        return 0;
      }
+     
+     //int Box::findParameters()
+     //{
+       
+     //}
+     
+     
     
      VectorXf Box::computeDistance(const MatrixXf & pts){/*to be implemented */ return MatrixXf::Zero(1,1);}
      float Box::computeDistance(const double &X, const double &Y, const double & Z) {/*to be implemented*/ return 0.0f;}

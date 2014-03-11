@@ -34,7 +34,7 @@ class Inertia:public Sensor
     Inertia(string filename); 
 		//FIXME PROBLEME DESTRUCT
     ~Inertia();
-  //  int readFile(string filname);
+    int load(string filname);
     void print(int d, int a);
      
  

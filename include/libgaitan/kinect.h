@@ -11,6 +11,14 @@
 #include <string>
 #include <iomanip>
 
+#ifdef __GNUC__
+#define DEPRECATED __attribute__((deprecated))
+#elif defined(_MSC_VER)
+#define DEPRECATED __declspec(deprecated)
+#else
+#pragma message("WARNING: You need to implement DEPRECATED for this compiler")
+#define DEPRECATED
+#endif
 
 namespace gaitan
 {
@@ -24,7 +32,10 @@ namespace gaitan
     
     int display();
     int acquire(const std::string &path , bool flagDisp=true);
-    Eigen::MatrixXf pointCloud(const std::string & path,const int &index);
+    
+    DEPRECATED Eigen::MatrixXf pointCloud(const std::string & path,const int &index); // deprecated
+  
+    int pointCloud(const std::string & path,const int &index, Eigen::MatrixXf & pts3D);
 
     
   };

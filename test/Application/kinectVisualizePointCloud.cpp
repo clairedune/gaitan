@@ -186,50 +186,29 @@ main (int argc, char** argv)
     Eigen::MatrixXf ptsOut; 
     kinect->limitFov(pt, ptsOut,distThreshold);
     std::cout << pt.rows() << "\t Total points in field of view" << std::endl;
+
+    Box origine;
+    origine.findParameters(pt);
+    origine.print();
     
-    if(pt.rows()<1) return -2;
-      
-    // init the kinect pose wrt the ground only for the first image
-    if(isFirst)
-      ground = kinect->extrinsicCalibration(pt,confidence,leafSize);   
-     isFirst=false;
- 
-    // select the points that are not on the ground
-    Eigen::MatrixXf ptsGround(pt),ptsFeetNWheels(1,3) ;
-    kinect->clearGroundPoints(ptsGround,ptsFeetNWheels,distThreshold,&ground);  
-    
-    // change the points frame
-    Eigen::MatrixXf gPtsFeetNWheels  = kinect->changeFrame(ptsFeetNWheels);     
-  
-    // Clear forbidden zone
-//    kinect->limitFov(gPtsFeetNWheels, ptsOut,distThreshold);   
-    Eigen::MatrixXf gPtsWheels(gPtsFeetNWheels), gPtsFeet(1,3); 
-    kinect->clearForbiddenZone(gPtsWheels, gPtsFeet, distThreshold);
-             
+
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr colorCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-    Conversion::convert(gPtsFeet,colorCloud, 0, 255,0);
-    Conversion::convert(gPtsWheels,colorCloud, 255, 0,0);
+    Conversion::convert(pt,colorCloud, 0, 10*iteration+10,0);
+  
     std::cout << colorCloud->points.size() << "\t pcl colour point cloud" << std::endl;     
     
-    // viewer remove all points, ok even if there is no point inside
+    // viewer
     viewer->removeAllPointClouds();
     viewer->removeAllShapes();
     
-    // add the points in the viewer
+    // viewer = shapesVis(colorCloud,0.0f, 0.0f, 1.0f, 0.0f);
     pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(colorCloud);
     viewer->addPointCloud<pcl::PointXYZRGB> (colorCloud, rgb,"sample cloud");
     viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "sample cloud"); 
-  
-  
-    // display the boxes corresponding to the forbidden zone
-    for (int i =0; i<kinect->forbiddenZone.size();i++) {
-       std::string tmp = "cube-%d";
-       char buf[100];
-       sprintf(buf,tmp.c_str(),i);
-       std::string cubeName(buf);      
-       cubeVis(viewer, kinect->forbiddenZone[i], 1.0, 0.0,0.0,cubeName);
-    }
-    
+ 
+    cubeVis(viewer, origine, 1.0, 0.0,0.0,"origine");
+ 
+ 
     int elapse(0);  
     //while (!viewer->wasStopped ())
     while (elapse<3)
