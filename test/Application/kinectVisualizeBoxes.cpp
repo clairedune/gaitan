@@ -113,7 +113,7 @@ float  a, float  b, float  c, float  d)
   coeffs.values.push_back (b);
   coeffs.values.push_back (c);
   coeffs.values.push_back (d);
- viewer->addPlane (coeffs, "plane");
+  viewer->addPlane (coeffs, "plane");
 
   return (viewer);
 }
@@ -137,9 +137,9 @@ main (int argc, char** argv)
   
   // segmentation parameters
   // TODO : make a conf file
-  float clusterTolerance (0.04); // min dist between two cluster
+  float clusterTolerance (0.03); // min dist between two cluster
   int minClusterSize(200);       // min size of a cluster
-  int maxClusterSize(50000);     // max size of a cluster
+  int maxClusterSize(5000);     // max size of a cluster
   double confidence(0.02);       // confidence for plane detection
   float leafSize(0.005);          // size of the grid a filtered point cloud
   double distThreshold(0.02);    // min point-to-plane distance when removing points belonging to ground plane
@@ -306,14 +306,14 @@ main (int argc, char** argv)
        cubeVis(viewer, feetBoundingBoxes[i], 0.0, 1.0,0.0,footName);
     }
     
-    int elapse(0);  
+   // int elapse(0);  
     //while (!viewer->wasStopped ())
-    while (elapse<3)
-      {
-         viewer->spinOnce (100);
-        boost::this_thread::sleep (boost::posix_time::microseconds (10000));
-        elapse++;
-      }
+    //while (elapse<3)
+      //{
+        viewer->spinOnce ();
+//        boost::this_thread::sleep (boost::posix_time::microseconds (10000));
+  //      elapse++;
+    //  }
    }
 }
 

@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
   // argv[0] est le nom de la programme
   // argv[1] est le premier argument passé au programme
   // Get the data file name
-  std::string path,encoderFilename("encoder");
+  std::string path;
   
   if(argc>1)
       path = argv[1];
@@ -29,10 +29,9 @@ int main(int argc, char **argv) {
   
   std::cout << "Nom du chemin vers les données : ";
   std::cout << path << std::endl;
-  std::cout << "Nom du fichier d'encoder : ";
+  Encoder *encoder = new Encoder(path);  
 
-  std::string filename = path+"/"+encoderFilename;
-  Encoder *encoder = new Encoder(filename);  
+  encoder->print(0,10);
 
   //compute odometry
   double L(0.529);
@@ -49,6 +48,9 @@ int main(int argc, char **argv) {
   encoder->saveLeft(outfileLeft);
   encoder->saveRight(outfileRight); 
   encoder->saveSynchro(outfileSync);
+  
+
+
 
   //delete encoder;
   return 1;

@@ -142,7 +142,8 @@ std::string filename;
     //  plane.findParameters(ptsIn, ptsOut, confidence);
       
       //populate cloud     
-      pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud =new pcl::PointCloud<pcl::PointXYZRGB>;
+      
       convert(ptsIn,cloud, 255, 0, 0);
       convert(ptsOut,cloud, 0, 255,0);
       cloud->width = (int) cloud->points.size ();

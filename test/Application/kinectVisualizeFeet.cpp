@@ -230,14 +230,8 @@ main (int argc, char** argv)
        cubeVis(viewer, kinect->forbiddenZone[i], 1.0, 0.0,0.0,cubeName);
     }
     
-    int elapse(0);  
-    //while (!viewer->wasStopped ())
-    while (elapse<3)
-      {
-         viewer->spinOnce (100);
-        boost::this_thread::sleep (boost::posix_time::microseconds (100000));
-        elapse++;
-      }
+    viewer->spinOnce ();
+    
    }
 }
 

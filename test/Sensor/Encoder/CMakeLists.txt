@@ -7,6 +7,9 @@
 SET (SOURCE
 testEncoder.cpp
 encoderGrabber.cpp
+testEncoderGrabberWithClass.cpp
+testEncoderAcquire.cpp
+testEncoderReadAndPlot.cpp
 )
 
 # rule for binary build

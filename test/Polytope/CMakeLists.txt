@@ -5,12 +5,7 @@
 #--------------------------------------------
 
 SET (SOURCE
-#main.cpp
-#testPlotEncoder.cpp
-#testGlut.cpp
-#testPlaneFitting.cpp
-#testEigen.cpp
-testTable.cpp
+crea_boite.cpp
 )
 
 # rule for binary build
@@ -28,7 +23,3 @@ FOREACH(source ${SOURCE})
 
 ENDFOREACH(source)
 
-add_subdirectory(Sensor) 
-#add_subdirectory(Polytope) 
-#add_subdirectory(Geometry)
-#add_subdirectory(Application)

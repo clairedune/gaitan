@@ -37,8 +37,7 @@ class Sensor
     Sensor(string filename); 
     virtual ~Sensor();
     
-    
-    int load(const string & filename);
+    virtual int load(const string & filename);
     int save(const string &filename, const int &precision=15);
     void print(const int  & beg, const int & end);
     void print();

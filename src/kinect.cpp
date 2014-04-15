@@ -170,8 +170,8 @@ namespace gaitan
           double kinectTime = now.tv_sec + ((double)now.tv_usec)/1000000.0;
         
           if(file){
-	  			    file << index << "\t";
-              file << std::setprecision(precision) <<kinectTime << "\n";	 
+              file << std::setprecision(precision) <<kinectTime << "\t";
+              file << index << "\n";	 
 			      }
  
           if(flagDisp){

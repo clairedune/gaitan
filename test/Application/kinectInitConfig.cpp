@@ -165,11 +165,12 @@ main (int argc, char** argv)
   std :: cout << ptsFeetNWheels.rows() << std::endl;
   std :: cout << gPtsFeetNWheels.rows() << std::endl;
   
-  leafSize=0.01;
+  leafSize=0.0;
+  //init the boxes
   kinect->initForbiddenBoxes(gPtsFeetNWheels,clusterTolerance, minClusterSize, maxClusterSize,leafSize);
   kinect->saveConfFile(path);
 
-
+  //display all the boxes
   for(int i=0 ; i< kinect->forbiddenZone.size() ; i++)
   {
       std::cout << "----- "<< i << " ----- " << endl; 
@@ -207,11 +208,11 @@ main (int argc, char** argv)
         cubeVis(viewer, kinect->forbiddenZone[4], 0.0, 1.0,1.0, "RW");
       
    
-      while (!viewer->wasStopped ())
-      {
-        viewer->spinOnce (100);
-        boost::this_thread::sleep (boost::posix_time::microseconds (100000));
-      }
+     //while (!viewer->wasStopped ())
+      //{
+        viewer->spinOnce ();
+       // boost::this_thread::sleep (boost::posix_time::microseconds (100000));
+      //}
    
 }
 #else

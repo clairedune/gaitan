@@ -19,6 +19,7 @@ SET (SOURCE
 #testKinectCalibrationMultiImage.cpp #detect a plane and use it to split the ptcloud
 #testKinectCalibrationMultiImage-v2.cpp #using directly the param of kinect 
 testKinectBoxOnFeet.cpp
+testKinectChangeTimeFile.cpp
 )
 
 # rule for binary build

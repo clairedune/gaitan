@@ -20,8 +20,13 @@
 #define GAITAN_ENCODER_H
 #include <string>
 
+#include <iostream>
+#include <vector> 
 #include <libgaitan/sensor.h>
 #include <libgaitan/table.h>
+#include <libgaitan/rgbdsensor.h>
+#include <phidget21.h>
+
 using namespace std;
 
 namespace gaitan
@@ -36,13 +41,28 @@ namespace gaitan
     Table *dataSynchro; // reorganise and synchronise left and right data
 
     
-  public:	
+    // name of the filename for the encoder matrices
+    std::string dataRawFilename ; 
+    std::string dataLeftFilename ; 
+    std::string dataRightFilename ; 
+    std::string dataSynchroFilename ; 
+    std::string dataOdometryFilename ; 
+     
+    
+   public:	
+   
+    vector<double> buffer; // buffer to acquire data with phidget handler
+
+   
     Encoder();
     Encoder(string filename); 
     ~Encoder();
 
-    int readFile(string filname);
+    int load(string filename);
+    //int save(string filename, int precision);
+    int flush(double initTime=0);
     int acquire(const std::string &path , bool flagDisp=true);
+    int acquire();
     void print(int beg, int end);
     void print();
     void initData();
@@ -50,11 +70,20 @@ namespace gaitan
     int saveLeft(string filename);
     int saveRight(string filename);
     int saveSynchro(string filename);
+    
+    //phidget
+    static int attachHandler(CPhidgetHandle ENC, void *userptr);
+    static int detachHandler(CPhidgetHandle ENC, void *userptr);
+    static int errorHandler(CPhidgetHandle ENC, void *userptr, int ErrorCode, const char *Description);
+    static int inputChangeHandler(CPhidgetEncoderHandle ENC, void *usrptr, int Index, int State);
+    static int positionChangeHandler(CPhidgetEncoderHandle ENC, void *usrptr, int Index, int Time, int RelativePosition);
+    int displayProperties(CPhidgetEncoderHandle phid);
+   
  
   private  :
-    void splitData();
-    int  synchronizeData();
-    
+    int splitData();
+    int synchronizeData();
+
  
 };
 }

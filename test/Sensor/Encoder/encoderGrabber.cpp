@@ -7,20 +7,11 @@
 // This work is licensed under the Creative Commons Attribution 2.5 Canada License. 
 // view a copy of this license, visit http://creativecommons.org/licenses/by/2.5/ca/
 
-
-#include <sys/time.h> // to get time
-#include <stdlib.h>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <iomanip>
-#include <math.h>
 #include <stdio.h>
 #include <phidget21.h>
 #include <sys/time.h>
 
 static double encTime0,encTime1;
-
 static FILE *file ;
 
 int CCONV AttachHandler(CPhidgetHandle ENC, void *userptr)
@@ -82,12 +73,13 @@ int CCONV PositionChangeHandler(CPhidgetEncoderHandle ENC, void *usrptr, int Ind
 	}
 	else
 	{
-                encTime1 +=((double)Time)/1000000.0;
-                globalTime = encTime1; //ici erreur de time
-        }
+    encTime1 +=((double)Time)/1000000.0;
+    globalTime = encTime1; 
+  }
 
-	printf("Encoder #%i - Position: %5d -- Relative Change %2d -- Elapsed Time: %5d \n", Index, Position, RelativePosition, Time);
-	fprintf(file,"%i\t %5d\t%2d\t%5d\t%f \n", Index, Position, RelativePosition, Time,globalTime);
+	printf("Encoder #%i - Position: %5d -- Relative Change %2d -- Elapsed Time: %5d \n", 
+        Index, Position, RelativePosition, Time);
+	fprintf(file,"%i \t %5d \t %2d \t %5d \t %f \n", Index, Position, RelativePosition, Time,globalTime);
 	return 0;
 }
 
@@ -112,36 +104,16 @@ int display_properties(CPhidgetEncoderHandle phid)
 	return 0;
 }
 
-
-void userInput (int argc, char** argv, std::string& path)
-{
-  
-//  pattern = "depth_%07d.pfm";
- 
-  // get the path name
-	if (argc>1){
-		path = argv[1];
-	}
-	else {
-    std::cerr << "Usage error : "  << argv[0] << "+ path" << std::endl;
-    path ="/home/dune/Documents/data/kinect/";
-  }
-}
-
-
-
-
 int encoder_simple()
 {
 	int result;
 	const char *err;
-	file=fopen("dataSaved/encoder","w");
+	file=fopen("/home/dune/dataSaved/essai1/encoder","w");
 	//Declare an encoder handle
 	CPhidgetEncoderHandle encoder = 0;
 
 	//create the encoder object
 	CPhidgetEncoder_create(&encoder);
-
 	//Set the handlers to be run when the device is plugged in or opened from software, unplugged or closed from software, or generates an error.
 	CPhidget_set_OnAttach_Handler((CPhidgetHandle)encoder, AttachHandler, NULL);
 	CPhidget_set_OnDetach_Handler((CPhidgetHandle)encoder, DetachHandler, NULL);
@@ -152,7 +124,8 @@ int encoder_simple()
 	CPhidgetEncoder_set_OnInputChange_Handler(encoder, InputChangeHandler, NULL);
 
 	//Registers a callback that will run if the encoder changes.
-	//Requires the handle for the Encoder, the function that will be called, and an arbitrary pointer that will be supplied to the callback function (may be NULL).
+	//Requires the handle for the Encoder, the function that will be called, 
+  //and an arbitrary pointer that will be supplied to the callback function (may be NULL).
 	CPhidgetEncoder_set_OnPositionChange_Handler (encoder, PositionChangeHandler, NULL);
 
 	CPhidget_open((CPhidgetHandle)encoder, -1);

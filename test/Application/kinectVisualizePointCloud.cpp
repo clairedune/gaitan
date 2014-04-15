@@ -209,14 +209,8 @@ main (int argc, char** argv)
     cubeVis(viewer, origine, 1.0, 0.0,0.0,"origine");
  
  
-    int elapse(0);  
-    //while (!viewer->wasStopped ())
-    while (elapse<3)
-      {
-         viewer->spinOnce (100);
-        boost::this_thread::sleep (boost::posix_time::microseconds (100000));
-        elapse++;
-      }
+    viewer->spinOnce ();
+      
    }
 }
 

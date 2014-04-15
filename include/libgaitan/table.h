@@ -19,7 +19,7 @@
 #ifndef TABLE_H
 #define TABLE_H
 #include <string>
-
+#include <vector>
 #include <Eigen/Dense>
 using namespace std;
 
@@ -42,18 +42,21 @@ class Table
     Table(int col, int raw);
     ~Table();
     
-    inline int rows(){return data.rows();}
-    inline void rows(const int & r){return data.conservativeResize(nbCol,r); nbRow=r;}
-    inline int cols(){return data.cols();}
-    inline void cols(const int & c){return data.conservativeResize(c,nbRow); nbCol=c;}
-
+    int flush(std::vector<double> buffer, double initTime=0);
     
+    inline int getRows(){return data.rows();}
+    inline void setRows(const int & r){this->nbRow=r; return data.conservativeResize(r,this->nbCol); }
+    inline int getCols(){return data.cols();}
+    inline void setCols(const int & c){this->nbCol=c; return data.conservativeResize(this->nbRow,c); }
+ 
+ 
+    void resize(int rows, int cols);
+    void conservativeResize(int rows, int cols);
     
     int  load(string filname);
     void print(int beg, int end);
     void print();
-    void resize(int col, int raw);
-    int  save(string filename, int precision);
+    int  save(string filename, int precision=15);
     void init();
 };
 }

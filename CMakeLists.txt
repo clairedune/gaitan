@@ -92,6 +92,7 @@ LIST(APPEND GAITAN_EXTERN_INCLUDE_DIR ${PCL_INCLUDE_DIRS})
 LIST(APPEND GAITAN_EXTERN_LINK_DIR ${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 MESSAGE(STATUS "library de la pcl ${PCL_LIBRARY_DIRS}")
+MESSAGE(STATUS "include de la pcl ${PCL_INCLUDE_DIRS}")
 #add_executable (cloud_viewer cloud_viewer.cpp)
 #target_link_libraries (cloud_viewer ${PCL_LIBRARIES})
 LIST(APPEND GAITAN_EXTERN_LIBS ${PCL_LIBRARIES})
@@ -114,25 +115,25 @@ LIST(APPEND GAITAN_EXTERN_LIBS  OpenNI2)
 LIST(APPEND GAITAN_EXTERN_INCLUDE_DIR /usr/local/include/eigen3)
 
 #Ajout de la lib phidegt
-LIST(APPEND GAITAN_EXTERN_LIBS libphidget21)
+LIST(APPEND GAITAN_EXTERN_LIBS phidget21)
 
 #----------------------------------------------------------------------
 # Concatenate intern and third party include dirs
 #----------------------------------------------------------------------
 INCLUDE_DIRECTORIES(${GAITAN_INTERN_INCLUDE_DIR} ${GAITAN_EXTERN_INCLUDE_DIR})
-#MESSAGE (STATUS "Include ${GAITAN_EXTERN_INCLUDE_DIR}")
+MESSAGE (STATUS "All Include ${GAITAN_EXTERN_INCLUDE_DIR}")
 
 #----------------------------------------------------------------------
 # Add library path
 #----------------------------------------------------------------------
 LINK_DIRECTORIES(${GAITAN_INTERN_LINK_DIR} ${GAITAN_EXTERN_LINK_DIR})
-#MESSAGE(STATUS " Link Libs ${GAITAN_EXTERN_LINK_DIR}")
+MESSAGE(STATUS " All Link Libs ${GAITAN_EXTERN_LINK_DIR}")
 
 #----------------------------------------------------------------------
 # Link Libraries
 # ----------------------------------------------------------------------
 LINK_LIBRARIES(${GAITAN_EXTERN_LIBS} ${GAITAN_INTERN_LIBS})
-#Message(STATUS "Libs ${GAITAN_EXTERN_LIBS}")
+Message(STATUS "All Libs ${GAITAN_EXTERN_LIBS}")
 #----------------------------------------------------------------------
 # CREATE INTERN LIBRARY
 # ----------------------------------------------------------------------

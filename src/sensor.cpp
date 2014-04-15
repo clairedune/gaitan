@@ -81,8 +81,8 @@ int Sensor::load(const string &  filename){
 // Then the other columns are data
 Table* Sensor::synchronizeZeroBloc(Sensor* s1, Sensor* s2)
 { 
-  int nbRow1(s1->data->rows()), nbCol1(s1->data->cols());  
-  int nbRow2(s2->data->rows()), nbCol2(s2->data->cols());
+  int nbRow1(s1->data->getRows()), nbCol1(s1->data->getCols());  
+  int nbRow2(s2->data->getRows()), nbCol2(s2->data->getCols());
      
   // nb columns : (col_s1 - col_0_time) + (col_s2 - col_0_time) + col_time
   int nbCol = (nbCol1 - 1) + (nbCol2-1) + 1 ;
@@ -102,7 +102,7 @@ Table* Sensor::synchronizeZeroBloc(Sensor* s1, Sensor* s2)
 		do{
 			iter2++;
 			time2  = s2->data->data(iter2,0);
-		}while (time1>time2 && iter2<s2->data->rows());
+		}while (time1>time2 && iter2<s2->data->getRows());
 				
   }
   else {
@@ -196,7 +196,7 @@ Table* Sensor::synchronizeZeroBloc(Sensor* s1, Sensor* s2)
 	{  
 		synchro->data(iter,0) = time1;
 
-      for (int i=1;i<s1->data->cols();i++)
+      for (int i=1;i<s1->data->getCols();i++)
  			{
 				synchro->data(iter,i) = s1->data->data(iter1,i);
 			}
@@ -238,8 +238,8 @@ Table* Sensor::synchronizeZeroBloc(Sensor* s1, Sensor* s2)
 	{
 		cout << " ERREUR" << endl;
 		cout << iter << " " <<  endl 
-         << " iterL : " << iter1 << "et le max" << s1->data->rows() 
-         << " iterR : " << iter2<< "et le max" << s2->data->rows() << endl ;
+         << " iterL : " << iter1 << "et le max" << s1->data->getRows() 
+         << " iterR : " << iter2<< "et le max" << s2->data->getRows() << endl ;
 	}	
 	iter ++;
 	if(iter>=nbRow) finished = true; 

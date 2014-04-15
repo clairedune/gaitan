@@ -297,12 +297,12 @@ main (int argc, char** argv)
     
     int elapse(0);  
     //while (!viewer->wasStopped ())
-    while (elapse<3)
-      {
-         viewer->spinOnce (100);
-        boost::this_thread::sleep (boost::posix_time::microseconds (10000));
-        elapse++;
-      }
+    //while (elapse<3)
+      //{
+         viewer->spinOnce ();
+        //boost::this_thread::sleep (boost::posix_time::microseconds (10000));
+        //elapse++;
+      //}
    }
 }
 

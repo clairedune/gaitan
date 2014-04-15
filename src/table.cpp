@@ -22,6 +22,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
 #include <iomanip>
 #include <math.h>
 
@@ -33,61 +34,89 @@ using namespace std;
 
 namespace gaitan
 {
+  
+  
 Table::Table():nbRow(10),nbCol(7){
   this->init();
 }
 
-Table::Table(int  cols, int  rows):nbRow(rows),nbCol(cols) {
+Table::Table(int  rows, int  cols):nbRow(rows),nbCol(cols) {
   this->init();
 }
 
-
 void Table::init(){
-   
-  data.resize(this->nbRow, this->nbCol);
-  
-  //this->data = (double**)malloc(this->_nbRow*this->_nbCol*sizeof(double));
- 
-  //for(int i=0;i<this->_nbRow;i++){    
-  //  data[i]=(double*)malloc(this->_nbCol*sizeof(double));
-  //  for(int j=0;j<this->_nbCol; j++){
-	//  data[i][j]=0;  
-  //  }
-  //}
-  
+  data.resize(this->nbRow,this->nbCol);
+  for(int i=0; i< this->nbRow; i++)
+    for(int j=0; j< this->nbCol; j++)
+      data(i,j)=0;
+
 }
 
-void Table::resize(int cols, int rows){
+void Table::resize(int rows, int cols){
   this->nbRow      = rows;
   this->nbCol      = cols;
   this->init();
+}
+
+
+//FIXE ME INVERSION !!
+void Table::conservativeResize(int rows, int cols){
+  this->nbRow      = rows;
+  this->nbCol      = cols;
+  data.conservativeResize(this->nbRow,this->nbCol);
 }
 
 void Table::print(){
  print(0, this->nbRow-1);
 }
 
+
+/*!
+ * 
+ *void print(int begin, int end)
+ * \brief print a part of the data from the sample begin to the sample nuber end
+ * 
+ * 
+ */ 
 void Table::print(int deb, int end){
-   for( int i=0 ; i < this->nbRow ; i++ ){ 
-    if(i<=end && i>=deb){
-     std::cout << endl << i << "\t";
+
+  if (deb<0) deb=0;
+  else if (deb > this->nbRow)
+  {   
+    deb = this->nbRow;
+    //std::cout << "changement deb : " << deb << std::endl;
+  }
+  if (end > this->nbRow) 
+  {
+    end = this->nbRow;
+    //std::cout << "changement end : " << end << std::endl;
+
+  }
+  
+  std::cout << std::endl<<"\t";
+   for(int j=0;j<this->nbCol; j++){
+        std::cout << "c"<< j << "\t";
+   }
+   
+   for( int i=deb ; i < end ; i++ ){ 
+     std::cout << endl <<"l"<< i << "\t";
      for(int j=0;j<this->nbCol; j++){
-	  std::cout 	<< std::setprecision(11) 
+     std::cout 	<< std::setprecision(17) 
 			<< this->data(i,j) 
 			<< "\t";
-      }
     }
-  }  
+  } 
+  
+   std::cout <<std::endl;// << this->data << std::endl;
+  
+  
 }
 
 
 
 
 Table::~Table(){
-//  for(int i=0;i<this->_nbRow;i++){
-//    free(this->data[i]);
-//  }
-//  free(data);
+
 }
 
 
@@ -100,10 +129,9 @@ int Table::load(string filename){
       int nbLine=0;
       string line;
       while(getline(file, line))
-	nbLine++;      
+	    nbLine++;      
       
       this->nbRow = nbLine;
-      //FIXME : calculer le nombre de lignes à la volée this->_nbCol = 7;
       this->init();
       
       // on revient au début du fichier
@@ -121,14 +149,67 @@ int Table::load(string filename){
     }
   else 
     {
-      cerr << "impossible d'ouvrir le fichier"<<endl;
-      return 0;
+      cerr << "impossible d'ouvrir le fichier :: "<< filename<< endl;
+      return -1;
     }
    
-   return 1;
+   return 0;
 }
 
-int Table::save(string filename, int precision=10){
+int Table::flush(std::vector<double> buffer, double initTime)
+{
+  
+  std::cout << "buffer size" <<buffer.size() << std::endl;
+  if (buffer.size()%4!=0){
+    std::cerr << "The buffer does not contains enough values" << std::endl;
+    //this->buffer.clear();
+    return -1;
+  }
+  else{
+    std::cout << "ici" << std::endl;
+    double encTime0(initTime), encTime1(initTime);
+   
+    int nbData(4); // #0 encoder number #1 #2 #3 relative time
+    int nbColumns(nbData+1); //#4 absolute time
+    int nbSamples ((int)(buffer.size()/(nbData)));
+    std::cout << "nbColumns : "<<nbColumns<< std::endl;
+    std::cout << "nbSamples : "<<nbSamples<< std::endl;
+
+    this->resize(nbSamples, nbColumns);
+    std::cout << "nbCols : "<<this->getCols()<< std::endl;
+    std::cout << "nbRows : "<<this->getRows()<< std::endl;
+
+    
+    int i=0;
+    for(i=0 ; i<nbSamples ; i++ )
+    {
+      this->data(i,0) = buffer[i*nbData];
+      this->data(i,1) = buffer[i*nbData+1];
+      this->data(i,2) = buffer[i*nbData+2];
+      this->data(i,3) = buffer[i*nbData+3];
+      
+      // compute the global time for each of the encoder
+      if(buffer[i*nbColumns]==0){
+          encTime0+=buffer[i*nbData+3]/1000000.0;
+          this->data(i,4) = encTime0;
+        }
+      else if(buffer[i*nbData]==1){
+          encTime1+=buffer[i*nbData+3]/1000000.0;
+          this->data(i,4) = encTime1;
+        }
+    }
+    std::cout << "last i " << i<<endl;
+
+      std::cout << "Flushing values ok !!"<< std::endl;
+
+    return 1;
+ }
+ 
+   std::cout << "Flushing values ok???"<< std::endl;
+
+}
+
+int Table::save(string filename, int precision){
 
 	ofstream file(filename.c_str(), ios::out);
 

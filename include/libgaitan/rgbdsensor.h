@@ -37,8 +37,6 @@ namespace gaitan
      // pose of the sensor in a frame attached to the ground
      Eigen::Matrix4f gMk ; /*! pose of the sensor wrt the ground */
      
-
-     
      // name of the filename for RGB data, depth data, and time data
      std::string rgbFilenamePattern ; /*! root name for rgb file */
      std::string depthFilenamePattern ; /*! root name for depth file*/
@@ -51,11 +49,11 @@ namespace gaitan
      std::vector<Box> forbiddenZone;
      Box fov ; // authorized field of view 
     
-    
     public:	
     
      // constructor and destructor
      RGBDSensor();
+     RGBDSensor(std::string timeSamplingFileNam);
      RGBDSensor(double fx, double fy, double cx, double cy) ;
      virtual ~RGBDSensor();
      
