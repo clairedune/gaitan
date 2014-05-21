@@ -37,7 +37,19 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/segmentation/extract_clusters.h>
 
+#include <visp/vpConfig.h>
+#include <visp/vpRxyzVector.h>
+
+
 using namespace gaitan;
+
+
+void homogeneousMatrix (const float& x, const float& y, const float &theta)
+{
+  
+  
+}
+
 
 void userInput (int argc, char** argv, std::string& path, std::string &pattern, int & nbImBegin, int & nbImEnd)
 {
@@ -49,19 +61,19 @@ void userInput (int argc, char** argv, std::string& path, std::string &pattern, 
 		path = argv[1];
 	}
 	else {
-    path ="/home/dune/Documents/data/kinect/essai4";
+    path ="/home/dune/Documents/data/kinect/essai4/";
   }
   
   // get the number of images to treat
   if (argc>2){
     nbImBegin = atoi(argv[2]);
     }
-  else  nbImBegin = 60;  
+  else  nbImBegin = 0;  
   
   if (argc>3){
     nbImEnd = atoi(argv[3]);
     }
-  else  nbImEnd = nbImBegin;  
+  else  nbImEnd = nbImBegin+100;  
   
   
 }
@@ -145,7 +157,7 @@ main (int argc, char** argv)
   Kinect * kinect= new Kinect();  
   if(!kinect->loadConfFile(path))
   {
-      std::cerr   <<"No configuration file found. You need to init the kinect first"  << std::endl;
+      std::cerr   <<"No configuration file found in "  << path <<". You need to init the kinect first"  << std::endl;
       return -1;
   }
   
@@ -165,6 +177,20 @@ main (int argc, char** argv)
   bool isFirst = true;
   int iteration  =0;
 
+
+  //----- Create the transformation matrix ---- //
+
+  Eigen::Matrix4f wMg(Eigen::MatrixXf::Identity(4,4));
+  //wMg(0,3)=0.5;
+  
+  
+  
+  
+  
+  Eigen::Matrix4f gMgnext(Eigen::MatrixXf::Identity(4,4));
+  gMgnext(0,3)=0.01; 
+
+ 
   for(int nbIm=nbImBegin;nbIm<=nbImEnd ; nbIm++){ 
  
     
@@ -201,14 +227,23 @@ main (int argc, char** argv)
     // change the points frame
     Eigen::MatrixXf gPtsFeetNWheels  = kinect->changeFrame(ptsFeetNWheels);     
   
+  
     // Clear forbidden zone
-//    kinect->limitFov(gPtsFeetNWheels, ptsOut,distThreshold);   
-    Eigen::MatrixXf gPtsWheels(gPtsFeetNWheels), gPtsFeet(1,3); 
+    //    kinect->limitFov(gPtsFeetNWheels, ptsOut,distThreshold);   
+    Eigen::MatrixXf gPtsWheels(gPtsFeetNWheels),gPtsFeet(1,3); 
     kinect->clearForbiddenZone(gPtsWheels, gPtsFeet, distThreshold);
              
+    //---------Translation--------//
+    std::cout << "wMg :" << wMg << std::endl; 
+    Eigen::MatrixXf wPtsWheels(gPtsWheels), wPtsFeet(gPtsFeet);
+    wPtsFeet=kinect->changeFrame(gPtsFeet,wMg);         
+    wPtsWheels=kinect->changeFrame(gPtsWheels,wMg); 
+           
+    wMg = wMg*gMgnext ;    
+             
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr colorCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-    Conversion::convert(gPtsFeet,colorCloud, 0, 255,0);
-    Conversion::convert(gPtsWheels,colorCloud, 255, 0,0);
+    Conversion::convert(wPtsFeet,colorCloud, 0, 255,0);
+    //Conversion::convert(wPtsWheels,colorCloud, 255, 0,0);
     std::cout << colorCloud->points.size() << "\t pcl colour point cloud" << std::endl;     
     
     // viewer remove all points, ok even if there is no point inside
@@ -222,13 +257,13 @@ main (int argc, char** argv)
   
   
     // display the boxes corresponding to the forbidden zone
-    for (int i =0; i<kinect->forbiddenZone.size();i++) {
+    /*for (int i =0; i<kinect->forbiddenZone.size();i++) {
        std::string tmp = "cube-%d";
        char buf[100];
        sprintf(buf,tmp.c_str(),i);
        std::string cubeName(buf);      
        cubeVis(viewer, kinect->forbiddenZone[i], 1.0, 0.0,0.0,cubeName);
-    }
+    }*/
     
     viewer->spinOnce ();
     

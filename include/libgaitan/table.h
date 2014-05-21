@@ -58,6 +58,9 @@ class Table
     void print();
     int  save(string filename, int precision=15);
     void init();
+    
+    static int synchronize(Table &dataLeft, Table &dataRight ,Table & dataSynchro);
+    
 };
 }
 

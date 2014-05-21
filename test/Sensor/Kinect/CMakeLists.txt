@@ -20,7 +20,10 @@ SET (SOURCE
 #testKinectCalibrationMultiImage-v2.cpp #using directly the param of kinect 
 testKinectBoxOnFeet.cpp
 testKinectChangeTimeFile.cpp
+testKinectVisualizeFeet.cpp
+testKinectVisualizeFeetInWorld.cpp
 )
+
 
 # rule for binary build
 FOREACH(source ${SOURCE})

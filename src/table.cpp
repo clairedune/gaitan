@@ -67,7 +67,7 @@ void Table::conservativeResize(int rows, int cols){
 }
 
 void Table::print(){
- print(0, this->nbRow-1);
+ print(0, this->nbRow);
 }
 
 
@@ -153,7 +153,7 @@ int Table::load(string filename){
       return -1;
     }
    
-   return 0;
+   return 1;
 }
 
 int Table::flush(std::vector<double> buffer, double initTime)
@@ -216,7 +216,7 @@ int Table::save(string filename, int precision){
 	if(file){
       		for(int i=0;i<this->nbRow;i++){		
 			for(int j=0;j<this->nbCol;j++){
-	  			file <<  setprecision(precision) <<this->data(i,j) <<"\t";	 
+	  			file << setprecision(precision) << this->data(i,j) << "\t";	 
 			}
 			file << endl;	
       		}
@@ -229,6 +229,153 @@ int Table::save(string filename, int precision){
     }
  
 
-return 0;
+return 1;
+}
+
+
+
+
+int Table::synchronize(Table &dataLeft,Table &dataRight ,Table & dataSynchro)
+{
+  //nbCol 
+  int cols = dataLeft.getCols() + dataRight.getCols() - 1;
+  
+  //nbRow
+  int rows = dataLeft.getRows()+ dataRight.getRows(); 
+  //resize  output
+  dataSynchro.resize(rows,cols);
+ 
+
+  int iterLeft(0);
+  int iterRight(0);
+  int iter(0);
+  
+  double timeLeft  = dataLeft.data(iterLeft,0);
+  double timeRight = dataRight.data(iterRight,0);
+
+  bool finished(false);
+  while(!finished)
+  {  
+    
+	if( iterLeft<dataLeft.getRows() && iterRight<dataRight.getRows())
+	{
+    //std::cout << "iterLeft<dataLeft.getRows() && iterRight<dataRight.getRows()" << std::endl;
+		//if the two times are the same
+		if(timeLeft==timeRight)
+		{   
+      //std::cout << "timeLeft==timeRight" << std::endl;
+       
+			dataSynchro.data(iter,0) = timeLeft;
+      
+      for(int j=1 ; j<dataLeft.getCols() ; j++)
+			  dataSynchro.data(iter,j) = dataLeft.data(iterLeft,j);
+        
+      for(int j=1 ; j<dataRight.getCols() ; j++)
+			  dataSynchro.data(iter,dataLeft.getCols()+j-1) = dataRight.data(iterRight,j);
+        
+			iterLeft++;
+			iterRight++;
+      if (iterLeft<dataLeft.getRows())timeLeft  = dataLeft.data(iterLeft,0);
+      if (iterRight<dataRight.getRows())timeRight = dataRight.data(iterRight,0);
+		}
+		else if(timeLeft<timeRight)
+		{
+      //std::cout <<  "timeLeft<timeRight" << std::endl;
+      
+      dataSynchro.data(iter,0) = timeLeft;
+      
+      for(int j=1 ; j<dataLeft.getCols() ; j++)
+			  dataSynchro.data(iter,j) = dataLeft.data(iterLeft,j);
+        
+      if (iter==0)
+        for(int j=1 ; j<dataRight.getCols() ; j++)
+          dataSynchro.data(iter,dataLeft.getCols()+j-1) = 0;
+      else 
+        for(int j=1 ; j<dataRight.getCols() ; j++)
+          dataSynchro.data(iter,dataLeft.getCols()+j-1) = dataSynchro.data(iter-1,dataLeft.getCols()+j-1);
+          
+          
+			iterLeft++;
+      if (iterLeft<dataLeft.getRows())
+	      		timeLeft = dataLeft.data(iterLeft,0);
+		}
+		else if (timeRight<timeLeft)
+		{
+      //std::cout << "timeRight<timeLeft"<< std::endl;
+      dataSynchro.data(iter,0) = timeRight;
+      
+      if(iter==0)
+        for(int j=1 ; j<dataLeft.getCols() ; j++)
+			    dataSynchro.data(iter,j) = 0;
+      else  
+        for(int j=1 ; j<dataLeft.getCols() ; j++)
+			    dataSynchro.data(iter,j) = dataSynchro.data(iter-1,j);
+        
+        
+      for(int j=1 ; j<dataRight.getCols() ; j++)
+          dataSynchro.data(iter,dataLeft.getCols()+j-1) = dataRight.data(iterRight,j);
+          
+          
+			iterRight++;
+			if (iterRight<dataRight.getRows())
+            timeRight = dataRight.data(iterRight,0);
+		}	
+    
+	}  
+           
+	else if( iterLeft<dataLeft.getRows() && iterRight>=dataRight.getRows())
+	{
+       //std::cout << "iterLeft<dataLeft.getRows() && iterRight>=dataRight.getRows()" << std::endl;
+       dataSynchro.data(iter,0) = timeLeft;
+      
+      for(int j=1 ; j<dataLeft.getCols() ; j++)
+			  dataSynchro.data(iter,j) = dataLeft.data(iterLeft,j);
+        
+      if (iter==0)
+        for(int j=1 ; j<dataRight.getCols() ; j++)
+          dataSynchro.data(iter,dataLeft.getCols()+j-1) = 0;
+      else 
+        for(int j=1 ; j<dataRight.getCols() ; j++)
+          dataSynchro.data(iter,dataLeft.getCols()+j-1) = dataSynchro.data(iter-1,dataLeft.getCols()+j-1);
+          
+          
+			iterLeft++;
+			if (iterLeft<dataLeft.getRows())
+              timeLeft = dataLeft.data(iterLeft,0);
+	}
+	else  if( iterLeft>=dataLeft.getRows() && iterRight<dataRight.getRows())
+	{
+      //std::cout << "iterLeft>=dataLeft.getRows() && iterRight<dataRight.getRows()" << std::endl;   
+      dataSynchro.data(iter,0) = timeRight;
+      
+      if(iter==0)
+        for(int j=1 ; j<dataLeft.getCols() ; j++)
+			    dataSynchro.data(iter,j) = 0;
+      else  
+        for(int j=1 ; j<dataLeft.getCols() ; j++)
+			    dataSynchro.data(iter,j) = dataSynchro.data(iter-1,j);
+      
+      for(int j=1 ; j<dataRight.getCols() ; j++)
+          dataSynchro.data(iter,dataLeft.getCols()+j-1) = dataRight.data(iterRight,j);
+          
+			iterRight++;
+			if (iterRight<dataRight.getRows())timeRight = dataRight.data(iterRight,0);
+	}
+	else 
+	{
+    finished = true; 
+		cout << " ERREUR " << endl;
+		cout << iter << " " <<  endl 
+         << " iterL courant : " << iterLeft << " et le max " << dataLeft.getRows() 
+         << " iterR courant : " << iterRight<< " et le max " << dataRight.getRows() << endl ;
+	}	
+	iter ++;
+	if(iter>=dataSynchro.getRows()) finished = true; 
+  }
+  
+  dataSynchro.conservativeResize(iter-1, dataSynchro.getCols());
+  
+  return 1;
+  
 }
 }

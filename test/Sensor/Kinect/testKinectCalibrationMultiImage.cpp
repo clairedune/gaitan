@@ -147,7 +147,7 @@ main (int argc, char** argv)
     std::cout << "----------------------" << std::endl ;
         
     // get the point cloud
-    Eigen::MatrixXf currentPointCloud = kinect->pointCloud(path,index+13);
+    Eigen::MatrixXf currentPointCloud = kinect->pointCloud(path,index);
  
     // find the position of the kinect with regards to the ground
     double confidence = 0.02;

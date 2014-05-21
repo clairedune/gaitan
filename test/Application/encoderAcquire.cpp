@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
   // argv[0] est le nom de la programme
   // argv[1] est le premier argument passé au programme
   // Get the data file name
-  std::string path,encoderFilename("encoder");
+  std::string path;
   
   if(argc>1)
       path = argv[1];
@@ -38,57 +38,27 @@ int main(int argc, char **argv) {
     
   std::cout << "Nom du chemin vers les données : ";
   std::cout << path << std::endl;
-  std::cout << "Nom du fichier d'encoder : ";
-
-  std::string filename = path+"/"+encoderFilename;
   
   
-  //-----//
+  
 	Encoder * encoder = new Encoder();
   struct timeval now ;
   gettimeofday(&now,NULL);
 	double initTime  = now.tv_sec + ((double)now.tv_usec)/1000000.0;
-  //encoder->acquire();
- 
- 
-  // Acquisition simulation //
-  int lines (10);
-  int columns (4);
- 
-  std::vector<double> values (columns*lines);
-  for(int i=0;i<columns;i++)
-   for(int j=0;j<lines;j++)
-   {
-     values[j*columns+i] = i+j*columns*100000;
-     if(j%2==0) values[j*columns]=0;
-     else values[j*columns]=1;
-   }
-   
-  std::cout << "Buffer \n" <<std::endl; 
-  for(int i=0; i<columns*lines; i++) 
-  std::cout << values[i]<<std::endl; 
-   
-  encoder->buffer=values;
-  
-  //---------------------------//
-
+  encoder->acquire();
   encoder->flush(initTime);
-  encoder->print(0,4);
-  
-  std::cout << "Flushing values ok "<< std::endl;
-  
-   //compute odometry
+
+
+  //compute odometry
   double L(0.529);
   encoder->odometry(L); 
-  encoder->print(0,4);
-  
-  
+
+
   encoder->save(path);
   encoder->saveLeft(path);
   encoder->saveRight(path); 
   encoder->saveSynchro(path); 
   encoder->saveRaw(path); 
-  
   
   
   

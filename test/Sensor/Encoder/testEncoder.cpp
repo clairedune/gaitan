@@ -38,16 +38,12 @@ int main(int argc, char **argv) {
   encoder->odometry(L); 
   encoder->print(5,10);
 
-
-  string outfile = path+"/odometry.dat"; 
-  string outfileLeft = path+"/encoderL.dat"; 
-  string outfileRight = path+"/encoderR.dat";
-  string outfileSync = path+"/encoderS.dat";  
-
-  encoder->save(outfile,17);
-  encoder->saveLeft(outfileLeft);
-  encoder->saveRight(outfileRight); 
-  encoder->saveSynchro(outfileSync);
+  encoder->save(path);
+  encoder->saveLeft(path);
+  encoder->saveRight(path); 
+  encoder->saveSynchro(path); 
+  encoder->saveRaw(path); 
+  
   
 
 

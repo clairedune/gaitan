@@ -25,19 +25,26 @@ using namespace std;
 int main(int argc, char **argv) {
 
   std::string path;
+  double L(0.529);
   
-  if(argc>1)
+  if(argc>2)
+  {
       path = argv[1];
+      L = atof(argv[2]);
+      std::cout << "\n L : "<< L << std::endl ;
+  }
   else 
   {
-    std::cerr <<"Usage error : "<< argv[0] << "+ data folder name." << std::endl;
+    std::cerr <<" Usage error : "<< argv[0] << " [path to data] [L value]" << std::endl;
     return 0;
   }
     
   std::cout << "Nom du chemin vers les données : ";
   std::cout << path << std::endl;
 
-	Encoder * encoder = new Encoder(path);
+	Encoder * encoder = new Encoder();
+  encoder->loadRaw(path);
+  encoder->odometry(L); 
   
   //--------------------------------------------//
   #if defined(VISP_HAVE_DISPLAY)
@@ -68,7 +75,7 @@ int main(int argc, char **argv) {
      float time  = encoder->data->data(i,0)-timeT0;
      
      if (time>0){
-     std::cout << "\n Time" << time << std::endl; 
+     //std::cout << "\n Time" << time << std::endl; 
      float x     = encoder->data->data(i,1);
      float y     = encoder->data->data(i,2);
      float theta = encoder->data->data(i,3);

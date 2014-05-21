@@ -68,8 +68,7 @@ dataOdometryFilename("encoderOdo.dat")
    this->dataSynchro = new Table(10,9);  
    this->initData();
    
-   string filename = path+"/"+ this->dataRawFilename;
-   this->load(filename);
+   this->load(path);
 }
 
 void Encoder::initData()
@@ -239,26 +238,51 @@ Encoder::~Encoder(){
 
 
 
-int Encoder::load(string filename)
+/*! load raw data to treat*/
+int Encoder::loadRaw(string path)
 {
+  string filename = path+"/"+ this->dataRawFilename;
   if(this->dataRaw->load(filename)<0) 
-    return -1;
+    return 0;
   
   this->splitData();
   this->synchronizeData();
-  return 0;
+  return 1;
 }
 
-int Encoder::saveLeft(string filename){
+/*! load odom data*/
+int Encoder::load(string path)
+{
+  string filename = path+"/"+ this->dataOdometryFilename;
+  if(this->data->load(filename)<0) 
+    return 0;
+  return 1;
+}
+
+
+
+int Encoder::save(string path){
+  string filename = path+"/"+ this->dataOdometryFilename;
+  return this->data->save(filename,17);
+}
+int Encoder::saveLeft(string path){
+  string filename = path+"/"+ this->dataLeftFilename;
   return this->dataLeft->save(filename,17);
 }
 
-int Encoder::saveRight(string filename){
+int Encoder::saveRaw(string path){
+  string filename = path+"/"+ this->dataRawFilename;
+  return this->dataRaw->save(filename,17);
+}
+
+int Encoder::saveRight(string path){
+  string filename = path+"/"+ this->dataRightFilename;
   return this->dataRight->save(filename,17);
 }
 
 
-int Encoder::saveSynchro(string filename){
+int Encoder::saveSynchro(string path){
+  string filename = path+"/"+ this->dataSynchroFilename;
   return this->dataSynchro->save(filename,17);
 }
 

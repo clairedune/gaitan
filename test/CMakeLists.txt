@@ -30,5 +30,5 @@ ENDFOREACH(source)
 
 add_subdirectory(Sensor) 
 #add_subdirectory(Polytope) 
-#add_subdirectory(Geometry)
-#add_subdirectory(Application)
+add_subdirectory(Geometry)
+add_subdirectory(Application)

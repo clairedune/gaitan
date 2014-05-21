@@ -48,11 +48,11 @@ int main(int argc, char **argv) {
   struct timeval now ;
   gettimeofday(&now,NULL);
 	double initTime  = now.tv_sec + ((double)now.tv_usec)/1000000.0;
-  //encoder->acquire();
+  encoder->acquire();
  
  
   // Acquisition simulation //
-  int lines (10);
+  /*int lines (10);
   int columns (4);
  
   std::vector<double> values (columns*lines);
@@ -68,19 +68,13 @@ int main(int argc, char **argv) {
   for(int i=0; i<columns*lines; i++) 
   std::cout << values[i]<<std::endl; 
    
-  encoder->buffer=values;
+  encoder->buffer=values;*/
   
   //---------------------------//
-  
-  
-  
-  
 
   encoder->flush(initTime);
   encoder->print(0,4);
 
-
-  
   std::cout << "Flushing values ok "<< std::endl;
   
    //compute odometry
@@ -88,56 +82,15 @@ int main(int argc, char **argv) {
   encoder->odometry(L); 
   encoder->print(0,4);
 
-  string outfile = path+"/odometry.dat"; 
-  string outfileLeft = path+"/encoderL.dat"; 
-  string outfileRight = path+"/encoderR.dat";
-  string outfileSync = path+"/encoderS.dat";  
-
-  encoder->save(outfile,17);
-  encoder->saveLeft(outfileLeft);
-  encoder->saveRight(outfileRight); 
-  encoder->saveSynchro(outfileSync);  
+  encoder->save(path);
+  encoder->saveLeft(path);
+  encoder->saveRight(path); 
+  encoder->saveSynchro(path); 
+  encoder->saveRaw(path); 
   
   
   
-  //--------------------------------------------//
-  #if defined(VISP_HAVE_DISPLAY)
-  // Create a window (700 by 700) at position (100, 200) with two graphics
-  vpPlot A(2, 700, 700, 10, 10, "Odometry");
-  // The first graphic contains 3 curves X,Y,theta 
-  A.initGraph(0,4);
-  A.initGraph(1,1);
-  // The color of the curve in the first graphic is red
-  A.setColor(0,0,vpColor::red);
-  // The second curve is green
-  A.setColor(0,1,vpColor::green);
-  // The third curve is blue
-  A.setColor(0,2,vpColor::blue);
-
-  // The first curve of the second graph is blue
-  A.setColor(1,0,vpColor::blue);
-
-  int nbSamples(encoder->data->getRows());
   
-  std::cout << "nb samples ::" << nbSamples << std :: endl;
-  
-  for (int i = 0; i < nbSamples; i++) 
-  {
-     float time = encoder->data->data(i,0);
-     float x = encoder->data->data(i,0);
-     float y = encoder->data->data(i,0);
-     float theta = encoder->data->data(i,0);
-
-    A.plot(0,0,time,x);
-    A.plot(0,1,time,y);
-    A.plot(0,2,time,theta);  
-    A.plot(1,0,x,y);
-  }
-  //return 0;
-  #endif
-  
-  char a;
-  std:: cin >> a;
   
   return 0;
 }

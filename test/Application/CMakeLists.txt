@@ -11,6 +11,9 @@ kinectVisualizeBoxes.cpp
 kinectVisualizePointCloud.cpp
 kinectDisplay.cpp
 kinectAcquire.cpp
+encoderAcquire.cpp
+encoderPlotOdo.cpp
+encoderPlotOdoFromRaw.cpp
 )
 
 # rule for binary build

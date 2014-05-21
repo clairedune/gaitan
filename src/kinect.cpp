@@ -74,12 +74,10 @@ namespace gaitan
      return;
    }
       
-   Kinect::Kinect(double fx, double fy, double cx, double cy) 
+   Kinect::Kinect(double fx, double fy, double cx, double cy) :
+   RGBDSensor(fx,fy, cx, cy)
   {  
-   this->fx = fx ; 
-   this->fy = fy ; 
-   this->cx = cx ;  
-   this->cy = cy ;
+    return;
   }
  
  

@@ -2,12 +2,10 @@
 #define GAITAN_BOX_H
 
 #include <iostream>
-#include <stdlib.h>
-#include <vector>
-
 #include <libgaitan/shape.h>
 #include <Eigen/Dense>
-
+#include <vector>
+#include <pcl/common/common_headers.h>
 
 // TODO : surcharger les operation << et =
 //

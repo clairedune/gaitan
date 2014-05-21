@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
      float time  = encoder->data->data(i,0)-timeT0;
      
      if (time>0){
-     std::cout << "\n Time" << time << std::endl; 
+     //std::cout << "\n Time" << time << std::endl; 
      float x     = encoder->data->data(i,1);
      float y     = encoder->data->data(i,2);
      float theta = encoder->data->data(i,3);

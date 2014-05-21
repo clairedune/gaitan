@@ -5,10 +5,15 @@
 #--------------------------------------------
 
 SET (SOURCE
-#testRGBDSensorInitConf.cpp
+testRGBDSensorInitConf.cpp
 #testRGBDSensorReadConf.cpp
 #testSensor.cpp
 testSynchroEncoderKinect.cpp
+testSynchroEncoderKinectFromFile.cpp
+testSynchroEncoderKinectVisualize.cpp
+testSynchroEncoderKinectBoxes.cpp
+testSynchroEncoderKinectPlot.cpp
+testRGBDSensorCluster.cpp
 )
 
 # rule for binary build
@@ -26,5 +31,5 @@ FOREACH(source ${SOURCE})
 
 ENDFOREACH(source)
 
-#add_subdirectory(Kinect)
+add_subdirectory(Kinect)
 add_subdirectory(Encoder)

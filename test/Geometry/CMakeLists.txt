@@ -5,8 +5,9 @@
 #--------------------------------------------
 
 SET (SOURCE
-#testPlane.cpp
+testPlane.cpp
 #testShape.cpp
+testHomogeneousMatrix.cpp
 )
 
 # rule for binary build

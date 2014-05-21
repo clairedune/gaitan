@@ -64,9 +64,9 @@ namespace gaitan
       timeFilename("TimeSampling.dat"),
       confFilename("conf.dat"),
       gMk(Eigen::MatrixXf::Identity(4,4)), 
-      fx(), fy(), cx(), cy(),fov(-0.6,0.2,-0.5,0.6,0.0,1.0){ 
+      fx(), fy(), cx(), cy(),fov(-0.6,0.5,-0.5,0.6,0.0,1.0){ 
         
-      this->data  = new Table(2,10);
+      this->data  = new Table(10,2);
       // to remove all the artifacts under the ground
       Box underground (-10,10, -10, 10, -10,0);  
       forbiddenZone.push_back(underground);
@@ -98,7 +98,7 @@ namespace gaitan
     gMk(Eigen::MatrixXf::Identity(4,4)),
     fov(-0.6,0.2,-0.5,0.6,0.0,1.0) 
   {  
-         this->data  = new Table(2,10);
+         this->data  = new Table(10,2);
 
    // to remove all the artifacts under the ground
       Box underground (-10,10, -10, 10, -10,0);  
@@ -187,9 +187,9 @@ int RGBDSensor::saveConfFile(const std::string &pathName)
 	  if(file){
 	  			file << this->fx << "\t" << this->fy << "\t" << this->cx << "\t" << this->cy << std::endl; 
           file << this->gMk << std::endl;
-          file<< fov.getMinX() << "\t"<<fov.getMaxX()<< std::endl;
-          file<< fov.getMinY() << "\t"<<fov.getMaxY()<< std::endl;
-          file<< fov.getMinZ() << "\t"<<fov.getMaxZ()<< std::endl;
+          file << fov.getMinX() << "\t"<<fov.getMaxX()<< std::endl;
+          file << fov.getMinY() << "\t"<<fov.getMaxY()<< std::endl;
+          file << fov.getMinZ() << "\t"<<fov.getMaxZ()<< std::endl;
           file << this->forbiddenZone.size()<< std::endl;
           for (std::vector<Box>::iterator it = this->forbiddenZone.begin() ; it != forbiddenZone.end(); ++it)
           {
@@ -224,8 +224,14 @@ int RGBDSensor::loadConfFile(const std::string &pathName)
     
     forbiddenZone.clear();
     
+	  if(!file)
+    {
+      std::cerr << "impossible d'ouvrir le fichier " << this->confFilename<<std::endl;
+      return 0;
+    }
     
-	  if(file){
+    else
+    {
 	  			file >> this->fx ;
           file >> this->fy ; 
           file >> this->cx ;
@@ -264,13 +270,10 @@ int RGBDSensor::loadConfFile(const std::string &pathName)
             
           } 
       		file.close();
+          return 1; 
     	}
-    else 
-    {
-      std::cerr << "impossible d'ouvrir le fichier " << this->confFilename<<std::endl;
-      return 0;
-    }
-     return 1;  
+    
+      
 }
   
   
@@ -535,7 +538,8 @@ int RGBDSensor::detectClusters(const Eigen::MatrixXf& pointCloud,
 
       // segment the point that are not on the ground
       this->segment(cloudFeet, cloudFeetFiltered,clusterIndices,minClusterSize, maxClusterSize, clusterTolerance);
-  
+     
+      return 1;
 }  
 
 
@@ -648,6 +652,7 @@ int RGBDSensor::initForbiddenBoxes(const Eigen::MatrixXf & pts,
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloudFeetFiltered (new pcl::PointCloud<pcl::PointXYZ>);
   std::vector<pcl::PointIndices> clusterIndices;
   this->detectClusters(pts, cloudFeetFiltered,clusterIndices, clusterTolerance, minClusterSize,maxClusterSize,leafSize);
+  std::cout << "Number of clusters " << clusterIndices.size() << endl;
   this->clusterBoundingBoxes(pts, cloudFeetFiltered,clusterIndices,this->forbiddenZone);
   return 1;
 }

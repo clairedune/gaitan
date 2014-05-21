@@ -135,13 +135,12 @@ main (int argc, char** argv)
   
   // segmentation parameters
   // TODO : make a conf file
-  float clusterTolerance (0.1);  // min dist between two cluster
-  int minClusterSize(50);         // min size of a cluster
-  int maxClusterSize(50000);       // max size of a cluster
-  double confidence(0.02);         // confidence for plane detection
-  float leafSize(0.005);           // size of the grid a filtered point cloud
-  double distThreshold(0.02);      // min point-to-plane distance when removing points belonging to ground plane
- 
+  float clusterTolerance (0.04); // min dist between two cluster
+  int minClusterSize(150);       // min size of a cluster
+  int maxClusterSize(50000);     // max size of a cluster
+  double confidence(0.02);       // confidence for plane detection
+  float leafSize(0.005);          // size of the grid a filtered point cloud
+  double distThreshold(0.02);    // min point-to-plane distance when removing points belonging to ground plane
 
   //-------------------------------------------------------------//
         
@@ -162,17 +161,15 @@ main (int argc, char** argv)
   Eigen::MatrixXf gPtsFeetNWheels  = kinect->changeFrame(ptsFeetNWheels);     
   Eigen::MatrixXf gPointCloud  = kinect->changeFrame(pointCloud);     
   
-  std :: cout << pointCloud.rows() << std :: endl;
-  std :: cout << ptsFeetNWheels.rows() << std :: endl;
-  std :: cout << gPtsFeetNWheels.rows() << std :: endl;
+  std :: cout << pointCloud.rows() << std::endl;
+  std :: cout << ptsFeetNWheels.rows() << std::endl;
+  std :: cout << gPtsFeetNWheels.rows() << std::endl;
   
-  leafSize = 0.01;
-  //init the boxes
+  leafSize=0.01;
   kinect->initForbiddenBoxes(gPtsFeetNWheels,clusterTolerance, minClusterSize, maxClusterSize,leafSize);
-  std :: cout << "number of fobidden boxes: " << kinect->forbiddenZone.size() << std::endl;
   kinect->saveConfFile(path);
 
-  //display all the boxes
+
   for(int i=0 ; i< kinect->forbiddenZone.size() ; i++)
   {
       std::cout << "----- "<< i << " ----- " << endl; 
@@ -210,10 +207,10 @@ main (int argc, char** argv)
         cubeVis(viewer, kinect->forbiddenZone[4], 0.0, 1.0,1.0, "RW");
       
    
-     while (!viewer->wasStopped ())
+      while (!viewer->wasStopped ())
       {
-        viewer->spinOnce ();
-       // boost::this_thread::sleep (boost::posix_time::microseconds (100000));
+        viewer->spinOnce (100);
+        boost::this_thread::sleep (boost::posix_time::microseconds (100000));
       }
    
 }

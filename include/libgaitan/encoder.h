@@ -39,6 +39,7 @@ namespace gaitan
     Table *dataLeft; // data corresponding to the left encoder
     Table *dataRight; // data corresponding to the right encoder
     Table *dataSynchro; // reorganise and synchronise left and right data
+    //Table *data ; // In Sensor class contains the odometry data
 
     
     // name of the filename for the encoder matrices
@@ -52,22 +53,36 @@ namespace gaitan
    public:	
    
     vector<double> buffer; // buffer to acquire data with phidget handler
-
    
     Encoder();
     Encoder(string filename); 
     ~Encoder();
 
+    /*! Load the odom data contained in a file*/
     int load(string filename);
+    
+    /*! Load the raw data contained in a file*/
+    int loadRaw(string filename);
+    
     //int save(string filename, int precision);
+    
+    /*! When the data are acquired, they are stored in a buffer that need to be flushed
+     * in the appropriate tables : first Raw, then split in right and left and synchronised */
     int flush(double initTime=0);
+    
+    /*! Acquire data and store them in a file*/
     int acquire(const std::string &path , bool flagDisp=true);
+    
+    /*! Acquire data and store them in a buffer*/
     int acquire();
     void print(int beg, int end);
     void print();
     void initData();
     int odometry(double); 
+    
+    int save(string filename);
     int saveLeft(string filename);
+    int saveRaw(string filename);
     int saveRight(string filename);
     int saveSynchro(string filename);
     

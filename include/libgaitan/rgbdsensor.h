@@ -65,8 +65,10 @@ namespace gaitan
      inline double getCy(){return this->cy;}
       
      // modifiers
-     inline void setFov(const  Box & fieldOfView){this->fov=fieldOfView;}
-    
+     inline void setFov(const Box & fieldOfView){this->fov=fieldOfView;}
+     inline void setgMk(const Eigen::Matrix4f & gMk){this->gMk=gMk;}
+     
+     
      // sensor class methods
      void init();
      void print();
@@ -150,10 +152,10 @@ namespace gaitan
     /*! Change the frame where the points are expressed*/                   
     Eigen::MatrixXf changeFrame(const Eigen::MatrixXf & kP,const Eigen::Matrix4f & wMk); // deprecated
     /*! use this function better*/
-    void changeFrame(const Eigen::MatrixXf & kP, Eigen::MatrixXf & outM,const Eigen::Matrix4f & wMk);
+    //void changeFrame(const Eigen::MatrixXf & kP, Eigen::MatrixXf & outM,const Eigen::Matrix4f & wMk);
     /*! Change the frame where the points are expressed*/                   
     Eigen::MatrixXf changeFrame(const Eigen::MatrixXf & kP);// deprecated
-    void changeFrame(const Eigen::MatrixXf & kP,Eigen::MatrixXf & outM);
+    //void changeFrame(const Eigen::MatrixXf & kP,Eigen::MatrixXf & outM);
                    
 
     int detectClusters(const Eigen::MatrixXf& pointCloud, 
