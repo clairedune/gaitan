@@ -35,13 +35,16 @@ namespace gaitan
                         const double& maxz, const double& minz); 
                             
      inline void setParameters(const VectorXf& param){this->parameters=param;}     
-          
+               
      inline double getMinX(){return this->parameters(0);}
      inline double getMaxX(){return this->parameters(1);}
      inline double getMinY(){return this->parameters(2);}
      inline double getMaxY(){return this->parameters(3);}
      inline double getMinZ(){return this->parameters(4);}
      inline double getMaxZ(){return this->parameters(5);}
+     inline double getX(){return (this->parameters(0)+this->parameters(1))/2;}
+     inline double getY(){return (this->parameters(2)+this->parameters(3))/2;}
+     inline double getZ(){return (this->parameters(4)+this->parameters(5))/2;}
      
      void print(); 
      

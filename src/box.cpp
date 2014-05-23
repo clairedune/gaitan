@@ -8,7 +8,7 @@
    
 using namespace Eigen;
 
-namespace gaitan
+namespace gaitan  
 {
      Box::Box() : Shape(MatrixXf::Zero(6,1)){
 		 }
@@ -66,9 +66,12 @@ namespace gaitan
      
     void Box::print(){
 		 std::cout <<"The box parameters are:\n" << 
-      "X min :" << this->parameters(0) << " \t max " << this->parameters(1)<< std::endl<<
-      "Y min :" << this->parameters(2) << " \t max " << this->parameters(3)<< std::endl<<
-      "Z min :" << this->parameters(4) << " \t max " << this->parameters(5)<< std::endl;
+      "X min :" << this->parameters(0) << " \t X max :" << this->parameters(1)<< std::endl<<
+      "Y min :" << this->parameters(2) << " \t Y max :" << this->parameters(3)<< std::endl<<
+      "Z min :" << this->parameters(4) << " \t Y max :" << this->parameters(5)<< std::endl<<
+      "X center : " <<this->getX() << "\t "<<
+      "Y center : " <<this->getY() <<  "\t "<<
+      "Z center : " <<this->getZ() <<  std::endl;
 		 }
 		 
      

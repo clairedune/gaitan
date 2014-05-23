@@ -14,6 +14,8 @@ kinectAcquire.cpp
 encoderAcquire.cpp
 encoderPlotOdo.cpp
 encoderPlotOdoFromRaw.cpp
+encoderOdoFromRaw.cpp
+
 )
 
 # rule for binary build

@@ -13,6 +13,7 @@ testSynchroEncoderKinectFromFile.cpp
 testSynchroEncoderKinectVisualize.cpp
 testSynchroEncoderKinectBoxes.cpp
 testSynchroEncoderKinectPlot.cpp
+testSynchroEncoderKinectTwoFeet.cpp
 testRGBDSensorCluster.cpp
 )
 

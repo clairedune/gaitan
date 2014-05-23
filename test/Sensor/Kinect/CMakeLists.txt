@@ -22,6 +22,7 @@ testKinectBoxOnFeet.cpp
 testKinectChangeTimeFile.cpp
 testKinectVisualizeFeet.cpp
 testKinectVisualizeFeetInWorld.cpp
+testKinectLimitFov.cpp
 )
 
 

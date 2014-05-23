@@ -11,6 +11,7 @@ SET (SOURCE
 #testPlaneFitting.cpp
 #testEigen.cpp
 testTable.cpp
+testFoot.cpp
 )
 
 # rule for binary build
@@ -32,3 +33,4 @@ add_subdirectory(Sensor)
 #add_subdirectory(Polytope) 
 add_subdirectory(Geometry)
 add_subdirectory(Application)
+add_subdirectory(Phidget)

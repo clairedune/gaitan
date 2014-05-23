@@ -50,11 +50,11 @@ namespace gaitan
     
 	if( iterLeft<dataLeft.getRows() && iterRight<dataRight.getRows())
 	{
-    std::cout << "iterLeft<dataLeft.getRows() && iterRight<dataRight.getRows()" << std::endl;
+   // std::cout << "iterLeft<dataLeft.getRows() && iterRight<dataRight.getRows()" << std::endl;
 		//if the two times are the same
 		if(timeLeft==timeRight)
 		{   
-      std::cout << "timeLeft==timeRight" << std::endl;
+     // std::cout << "timeLeft==timeRight" << std::endl;
        
 			dataSynchro.data(iter,0) = timeLeft;
       
@@ -71,7 +71,7 @@ namespace gaitan
 		}
 		else if(timeLeft<timeRight)
 		{
-      std::cout <<  "timeLeft<timeRight" << std::endl;
+      //std::cout <<  "timeLeft<timeRight" << std::endl;
       
       dataSynchro.data(iter,0) = timeLeft;
       
@@ -116,7 +116,7 @@ namespace gaitan
            
 	else if( iterLeft<dataLeft.getRows() && iterRight>=dataRight.getRows())
 	{
-       std::cout << "iterLeft<dataLeft.getRows() && iterRight>=dataRight.getRows()" << std::endl;
+       //std::cout << "iterLeft<dataLeft.getRows() && iterRight>=dataRight.getRows()" << std::endl;
        dataSynchro.data(iter,0) = timeLeft;
       
       for(int j=1 ; j<dataLeft.getCols() ; j++)
@@ -136,7 +136,7 @@ namespace gaitan
 	}
 	else  if( iterLeft>=dataLeft.getRows() && iterRight<dataRight.getRows())
 	{
-      std::cout << "iterLeft>=dataLeft.getRows() && iterRight<dataRight.getRows()" << std::endl;   
+      //std::cout << "iterLeft>=dataLeft.getRows() && iterRight<dataRight.getRows()" << std::endl;   
       dataSynchro.data(iter,0) = timeRight;
       
       if(iter==0)

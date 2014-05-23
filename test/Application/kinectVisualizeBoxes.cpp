@@ -137,12 +137,22 @@ main (int argc, char** argv)
   
   // segmentation parameters
   // TODO : make a conf file
-  float clusterTolerance (0.03); // min dist between two cluster
-  int minClusterSize(200);       // min size of a cluster
-  int maxClusterSize(5000);     // max size of a cluster
+  //float clusterTolerance (0.03); // min dist between two cluster
+  //int minClusterSize(200);       // min size of a cluster
+  //int maxClusterSize(5000);     // max size of a cluster
+  //double confidence(0.02);       // confidence for plane detection
+  //float leafSize(0.005);          // size of the grid a filtered point cloud
+  //double distThreshold(0.02);    // min point-to-plane distance when removing points belonging to ground plane
+  
+  float clusterTolerance (0.04); // min dist between two cluster
+  int minClusterSize(300);       // min size of a cluster
+  int maxClusterSize(50000);     // max size of a cluster
   double confidence(0.02);       // confidence for plane detection
   float leafSize(0.005);          // size of the grid a filtered point cloud
   double distThreshold(0.02);    // min point-to-plane distance when removing points belonging to ground plane
+
+  
+  
   Box feetZone(-0.8,0,-0.4, 0.4, 0, 0.6);
 
   

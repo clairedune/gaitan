@@ -153,12 +153,22 @@ main (int argc, char** argv)
    
   // ------------ SET UP For Point Cloud Tools ------------------------------------//
   // segmentation parameters
-  float clusterTolerance (0.01); // min dist between two cluster
+ /* float clusterTolerance (0.01); // min dist between two cluster
   int minClusterSize(150);       // min size of a cluster
   int maxClusterSize(50000);     // max size of a cluster
   double confidence(0.02);       // confidence for plane detection
   float leafSize(0.005);          // size of the grid a filtered point cloud
   double distThreshold(0.02);    // min point-to-plane distance when removing points belonging to ground plane
+ */
+ float clusterTolerance (0.1); // min dist between two cluster
+  int minClusterSize(2000);       // min size of a cluster
+  int maxClusterSize(50000);     // max size of a cluster
+  double confidence(0.02);       // confidence for plane detection
+  float leafSize(0.01);          // size of the grid a filtered point cloud
+  double distThreshold(0.02);    // min point-to-plane distance when removing points belonging to ground plane
+
+  
+  
 
   //-------------Create the kinect from path --------------------------------------//
         

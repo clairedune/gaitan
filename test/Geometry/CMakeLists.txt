@@ -6,6 +6,7 @@
 
 SET (SOURCE
 testPlane.cpp
+testBox.cpp
 #testShape.cpp
 testHomogeneousMatrix.cpp
 )

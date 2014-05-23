@@ -64,7 +64,7 @@ namespace gaitan
       timeFilename("TimeSampling.dat"),
       confFilename("conf.dat"),
       gMk(Eigen::MatrixXf::Identity(4,4)), 
-      fx(), fy(), cx(), cy(),fov(-0.6,0.5,-0.5,0.6,0.0,1.0){ 
+      fx(), fy(), cx(), cy(),fov(-0.6,0.2,-0.4,0.4,0.5,0.8){ 
         
       this->data  = new Table(10,2);
       // to remove all the artifacts under the ground
@@ -96,7 +96,7 @@ namespace gaitan
     timeFilename("TimeSampling.dat"),
     confFilename("conf.dat"),
     gMk(Eigen::MatrixXf::Identity(4,4)),
-    fov(-0.6,0.2,-0.5,0.6,0.0,1.0) 
+    fov(-0.6,0.2,-0.4,0.4,0.5,0.8) 
   {  
          this->data  = new Table(10,2);
 
@@ -214,6 +214,9 @@ int RGBDSensor::loadTimeSampling(const std::string &pathName)
    std::string filename = this->timePath(pathName); 
    return this->load(filename);
 }  
+
+
+
 
 /*! Read the conf file to set the fobidden area value */
 int RGBDSensor::loadConfFile(const std::string &pathName)
