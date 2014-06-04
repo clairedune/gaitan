@@ -38,7 +38,8 @@ namespace gaitan
   dataLeftFilename("encoderL.dat"),
   dataRightFilename("encoderR.dat"),
   dataSynchroFilename("encoderSync.dat"),
-  dataOdometryFilename("encoderOdo.dat")
+  dataOdometryFilename("encoderOdo.dat"),
+  wheelSize(0.1)
   {//:encoderHandle(0){
  //  CPhidgetEncoder_create(&this->encoderHandle);
    
@@ -59,7 +60,8 @@ dataRawFilename("encoder.dat"),
 dataLeftFilename("encoderL.dat"),
 dataRightFilename("encoderR.dat"),
 dataSynchroFilename("encoderSync.dat"),
-dataOdometryFilename("encoderOdo.dat")
+dataOdometryFilename("encoderOdo.dat"),
+wheelSize(0.1)
 {
    this->data        = new Table(10,4);
    this->dataRaw     = new Table(10,5);  
@@ -69,6 +71,11 @@ dataOdometryFilename("encoderOdo.dat")
    this->initData();
    
    this->load(path);
+}
+
+void Encoder::setWheelSize(const double & s) 
+{
+  this->wheelSize=s;
 }
 
 void Encoder::initData()
@@ -310,7 +317,6 @@ int Encoder:: splitData(){
  this->dataLeft->resize(maxRow,5);
  this->dataRight->resize(maxRow,5);
  
- double wheelSize(0.1);
  int indexLeft(0), indexRight(0); 
 
  // run on all the file lines
@@ -326,9 +332,9 @@ int Encoder:: splitData(){
     // encoder relative value since the last sample
     double relPulse ( this->dataRaw->data(i,2) );
     double relAngle ( relPulse/4*M_PI/180 );
-    double relDist  ( relAngle/4*0.1 );
+    double relDist  ( relAngle/4*this->wheelSize);
 
-    
+  
     // time
    // double absTime  ( this->dataRaw->data(i,6) ) ;
    double absTime  ( this->dataRaw->data(i,4) ) ;

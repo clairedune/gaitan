@@ -25,17 +25,19 @@ using namespace std;
 int main(int argc, char **argv) {
 
   std::string path;
-  double L(0.529);
+  double L(0.529),s(0.1);
   
-  if(argc>2)
+  if(argc>3)
   {
       path = argv[1];
       L = atof(argv[2]);
+      s = atof(argv[3]); // wheelsize
       std::cout << "\n L : "<< L << std::endl ;
+      std::cout << "\n WheelSize : "<< s << std::endl ;
   }
   else 
   {
-    std::cerr <<" Usage error : "<< argv[0] << " [path to data] [L value]" << std::endl;
+    std::cerr <<" Usage error : "<< argv[0] << " [path to data] [L value] [WheelSize value]" << std::endl;
     return 0;
   }
     
@@ -43,9 +45,11 @@ int main(int argc, char **argv) {
   std::cout << path << std::endl;
 
 	Encoder * encoder = new Encoder();
+  encoder->setWheelSize(s);
   encoder->loadRaw(path);
   encoder->odometry(L); 
   
+  encoder->print(0,10);
   //--------------------------------------------//
   #if defined(VISP_HAVE_DISPLAY)
   // Create a window (700 by 700) at position (100, 200) with two graphics
@@ -75,7 +79,7 @@ int main(int argc, char **argv) {
      float time  = encoder->data->data(i,0)-timeT0;
      
      if (time>0){
-     std::cout << "\n Time" << time << std::endl; 
+    // std::cout << "\n Time" << time << std::endl; 
      float x     = encoder->data->data(i,1);
      float y     = encoder->data->data(i,2);
      float theta = encoder->data->data(i,3);

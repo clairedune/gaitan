@@ -53,11 +53,15 @@ namespace gaitan
    public:	
    
     vector<double> buffer; // buffer to acquire data with phidget handler
+    double wheelSize; 
+    
    
     Encoder();
     Encoder(string filename); 
     ~Encoder();
 
+    void setWheelSize(const double & s); 
+  
     /*! Load the odom data contained in a file*/
     int load(string filename);
     

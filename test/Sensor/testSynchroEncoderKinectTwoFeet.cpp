@@ -236,7 +236,7 @@ main (int argc, char** argv)
   double distThreshold(0.02);    // min point-to-plane distance when removing points belonging to ground plane
 
   //-------------Create the kinect from path --------------------------------------//
-  Kinect * kinect= new Kinect();  
+  Kinect * kinect= new Kinect(594.0,591.0,339.05, 247.5);  
   if(!kinect->loadConfFile(path)){
       std::cerr   <<"No configuration file found in "  << path <<". You need to init the kinect first"  << std::endl;
       return -1;
@@ -290,11 +290,12 @@ main (int argc, char** argv)
   
    for(int index=nbSampleBegin ; index<=nbSampleEnd ; index+=sampleStep ){
     nbIm = synchro.data(index,1);
+    double currtime = synchro.data(index,0);
     // prompt message
     std::cout << "----------------------" << std::endl ;
     std::cout << "  Iteration "           << iteration << std::endl ;
     std::cout << "  Image "               << nbIm << std::endl ;
-    std::cout  << " Time "                << std::setprecision(15) << synchro.data(index,0) << std::endl; 
+    std::cout  << " Time "                << std::setprecision(15) << currtime << std::endl; 
     std::cout << "----------------------" << std::endl ;
     iteration++;
          

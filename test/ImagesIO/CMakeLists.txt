@@ -5,12 +5,8 @@
 #--------------------------------------------
 
 SET (SOURCE
-testEncoder.cpp
-encoderGrabber.cpp
-testEncoderGrabberWithClass.cpp
-testEncoderAcquire.cpp
-testEncoderReadAndPlot.cpp
-testEncoderChangeOdoFile.cpp
+testTiff2PCL.cpp
+testTiff2PFM.cpp
 )
 
 # rule for binary build
@@ -28,4 +24,3 @@ FOREACH(source ${SOURCE})
 
 ENDFOREACH(source)
 
-#add_subdirectory(test)

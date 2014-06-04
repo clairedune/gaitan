@@ -10,8 +10,8 @@ SET (SOURCE
 #testFreenect.cpp
 #testKinectDisplay.cpp
 #testKinect.cpp
-#testKinectAcquire.cpp
-#testKinectRead.cpp
+testKinectAcquire.cpp
+testKinectRead.cpp
 #testKinectConvertToEigenMatrix.cpp
 #testKinectDetectGround.cpp
 #testKinectConvert.cpp

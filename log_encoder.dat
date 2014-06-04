@@ -1,0 +1,5 @@
+Nom du chemin vers les données : /home/dune/Documents/data/encoder-kinect/essai2
+Waiting for encoder to be attached....Problem waiting for attachment: Given timeout has been exceeded.
+buffer size0
+ERR:SplitData >> no data to split
+encoderAcquire: /usr/local/include/eigen3/Eigen/src/Core/DenseCoeffsBase.h:337: Eigen::DenseCoeffsBase<Derived, 1>::Scalar& Eigen::DenseCoeffsBase<Derived, 1>::operator()(Eigen::DenseCoeffsBase<Derived, 1>::Index, Eigen::DenseCoeffsBase<Derived, 1>::Index) [with Derived = Eigen::Matrix<double, -0x00000000000000001, -0x00000000000000001>, Eigen::DenseCoeffsBase<Derived, 1>::Scalar = double, Eigen::DenseCoeffsBase<Derived, 1>::Index = long int]: Assertion `row >= 0 && row < rows() && col >= 0 && col < cols()' failed.

@@ -94,19 +94,21 @@ int main(int argc, char ** argv) {
       // A click to view next image
       std::cout << "Click in one image to open next image" << std::endl;
       while(index<nbImages){
-        
-        if(file){
-	  			    file >> index ;
-              file >> kinectTime;	 
+      if(file){
+	  			   // file >> index ;
+              file >> kinectTime;
+              file >> index;	 
         }
         
-        std::cout << "Index : "<< index << " \t Time : " << std::setprecision(15)<<kinectTime << std::endl;
-            
+       // std::cout << "Index : "<< index << " \t Time : " << std::setprecision(15)<<kinectTime << std::endl;
+       //for(index=0;index<1000;index=index+60)     {
         // compose file name    
         std::string depthPath = path+"/"+depthFilename;
         char buf[100];
         sprintf(buf,depthPath.c_str(),index);
         std::string depthFullPath(buf);
+        
+        std::cout << "Le fichier est : "<<depthFullPath << std::endl;
         
         // read the image
         try{
@@ -115,6 +117,8 @@ int main(int argc, char ** argv) {
         catch(...){
               std::cout << "Catch an exception when reading image " << depthFullPath << std::endl;
         }
+        
+        std::cout << "lecture du fichier réussie" << std::endl;
         
         // create Idmap for displaying
         createRGBaFromFloat(dmap, Idmap);
@@ -147,24 +151,3 @@ main(){
 	std::cout << "You should install a video device (X11, GTK, OpenCV, GDI) to run this example" << std::endl;
 }
 #endif
-
-#ifndef GAITAN_KINECT_H
-#define GAITAN_KINECT_H
-
-#include <libgaitan/sensor.h>
-#include <libgaitan/table.h>
-
-
-
-namespace gaitan
-{
-  class Kinect:public Sensor
-  {   
-    public:	
-     Kinect();
-     Kinect(string path);
-     ~Kinect();
-      
-  };
-}
-#endif // kinect_H

@@ -30,6 +30,7 @@ FOREACH(source ${SOURCE})
 ENDFOREACH(source)
 
 add_subdirectory(Sensor) 
+add_subdirectory(ImagesIO) 
 #add_subdirectory(Polytope) 
 add_subdirectory(Geometry)
 add_subdirectory(Application)

@@ -68,8 +68,8 @@ namespace gaitan
    /*!
    * \brief kinect constructor with defaut kinect parameters
    */
-   //Kinect::Kinect() : RGBDSensor(594.0,591.0,339.05, 247.5)
-   Kinect::Kinect() : RGBDSensor(525.0,525.0,319.05, 239.5)
+   Kinect::Kinect() : RGBDSensor(594.0,591.0,339.05, 247.5)
+   //Kinect::Kinect() : RGBDSensor(525.0,525.0,319.05, 239.5)
    {
      return;
    }
