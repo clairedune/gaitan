@@ -85,7 +85,12 @@ int main(int argc, char ** argv) {
       //count lines
       int nbImages(0);
       std::string line;
-      if (file){
+      if (!file)
+      {
+        std::cerr << "ERROR File "<< timeFullPath << std::endl;
+        return -2; 
+      }
+      else{
         while(getline(file, line)) nbImages++;      
         file.clear();
         file.seekg(0,std::ios::beg); 

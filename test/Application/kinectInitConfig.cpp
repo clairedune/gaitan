@@ -49,24 +49,31 @@ using namespace gaitan;
 
 
 
-void userInput (int argc, char** argv, std::string& path, std::string &pattern, int & nbIm)
+void userInput (int argc, char** argv, std::string& path, int & nbIm, float & clusterTolerance)
 {
   
-  pattern = "depth_%07d.pfm";
+  
  
   // get the path name
 	if (argc>1){
 		path = argv[1];
 	}
 	else {
-    path ="/home/dune/Documents/data/kinect/essai1";
+    path ="/home/dune/Documents/data/kinect/essai2";
   }
   
-  // get the number of images to treat
+  // get the number of the image to use for the init
   if (argc>2){
     nbIm = atoi(argv[2]);
     }
-  else  nbIm = 0;  
+  else nbIm = 0;  
+  
+  
+  if(argc>3){
+    clusterTolerance = atof(argv[3]);
+    } 
+  else clusterTolerance = 0.1;
+  
 }
 
 
@@ -123,28 +130,24 @@ float  a, float  b, float  c, float  d)
 int
 main (int argc, char** argv)
 {
-
-
- //------------- INIT -----------------------------------------//
-  std::string path, pattern, fullPath;
-  int nbIm;
-  userInput(argc, argv, path, pattern, nbIm);
-     
-   
-  // ------------ SET UP ------------------------------------//
   
+  // ------------ SET UP ------------------------------------//
   // segmentation parameters
   // TODO : make a conf file
-  float clusterTolerance (0.1);  // min dist between two cluster
+  float clusterTolerance (0.12);  // min dist between two cluster
   int minClusterSize(50);         // min size of a cluster
   int maxClusterSize(50000);       // max size of a cluster
   double confidence(0.02);         // confidence for plane detection
   float leafSize(0.005);           // size of the grid a filtered point cloud
-  double distThreshold(0.02);      // min point-to-plane distance when removing points belonging to ground plane
+  double distThreshold(0.01);      // min point-to-plane distance when removing points belonging to ground plane
  
-
+ //------------- INIT -----------------------------------------//
+  std::string path, fullPath, pattern;
+  pattern = "depth_%07d.pfm";
+  int nbIm;
+  userInput(argc, argv, path, nbIm, clusterTolerance);
+  
   //-------------------------------------------------------------//
-        
   double fx(525.0), fy(525.0), cx(319.05), cy(239.5);
   Kinect * kinect= new Kinect(fx,fy,cx,cy);  
       
@@ -158,7 +161,7 @@ main (int argc, char** argv)
   Eigen::MatrixXf ptsFeetNWheels(1,3) ;
   kinect->clearGroundPoints(pointCloud,ptsFeetNWheels,distThreshold,&ground);  
   
-  // change the points frame
+  // change the points cloud frame using the orientation of the ground
   Eigen::MatrixXf gPtsFeetNWheels  = kinect->changeFrame(ptsFeetNWheels);     
   Eigen::MatrixXf gPointCloud  = kinect->changeFrame(pointCloud);     
   
@@ -213,7 +216,7 @@ main (int argc, char** argv)
      while (!viewer->wasStopped ())
       {
         viewer->spinOnce ();
-       // boost::this_thread::sleep (boost::posix_time::microseconds (100000));
+        boost::this_thread::sleep (boost::posix_time::microseconds (100000));
       }
    
 }

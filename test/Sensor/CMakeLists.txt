@@ -15,6 +15,8 @@ testSynchroEncoderKinectBoxes.cpp
 testSynchroEncoderKinectPlot.cpp
 testSynchroEncoderKinectTwoFeet.cpp
 testRGBDSensorCluster.cpp
+twoFeetTrajectories.cpp
+testSaveFeetTrajectories.cpp
 )
 
 # rule for binary build
